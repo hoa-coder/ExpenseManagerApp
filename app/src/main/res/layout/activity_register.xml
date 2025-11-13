@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    tools:context=".RegisterActivity">
+
+    <TextView
+        android:text="Đăng ký tài khoản mới"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/edtNewUsername"
+        android:hint="Tên đăng nhập mới"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName" />
+
+    <EditText
+        android:id="@+id/edtNewPassword"
+        android:hint="Mật khẩu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:inputType="textPassword" />
+
+    <EditText
+        android:id="@+id/edtConfirmPassword"
+        android:hint="Nhập lại mật khẩu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:inputType="textPassword" />
+
+    <Button
+        android:id="@+id/btnRegisterSubmit"
+        android:text="Đăng ký"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp" />
+
+</LinearLayout>
