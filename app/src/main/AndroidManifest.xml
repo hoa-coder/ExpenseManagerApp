@@ -13,15 +13,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ExpenseManagerApp">
 
-        <!-- Màn hình đăng nhập (hiển thị đầu tiên khi mở app) -->
+        <!-- Màn hình thêm chi phí (hiển thị đầu tiên khi mở app) -->
         <activity
-            android:name=".LoginActivity"
+            android:name=".AddExpenseActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Màn hình đăng nhập (không còn là màn hình khởi chạy chính) -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
 
         <!-- Màn hình chính sau khi đăng nhập -->
         <activity
