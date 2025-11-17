@@ -21,13 +21,14 @@
             android:layout_height="32dp"
             android:src="@android:drawable/ic_menu_revert"
             app:tint="@android:color/white"
-            android:padding="4dp" />
+            android:padding="4dp"
+            android:contentDescription="@string/content_description_back" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Tạo nền Thẻ tiền gửi"
+            android:text="@string/create_deposit_card_header"
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -39,7 +40,8 @@
             android:layout_height="32dp"
             android:src="@android:drawable/ic_menu_save"
             app:tint="@android:color/white"
-            android:padding="4dp" />
+            android:padding="4dp"
+            android:contentDescription="@string/content_description_save" />
     </LinearLayout>
 
     <ScrollView
@@ -55,7 +57,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Thông tin tài khoản"
+                android:text="@string/account_info_section"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#212121"
@@ -63,9 +65,10 @@
                 android:background="#F5F5F5" />
 
             <TextView
+                android:id="@+id/tv_account_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Thẻ tiền gửi"
+                android:text="@string/account_type_deposit_card"
                 android:textSize="12sp"
                 android:textColor="#999999"
                 android:paddingStart="16dp"
@@ -86,7 +89,8 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@android:drawable/ic_menu_myplaces"
-                    android:padding="8dp" />
+                    android:padding="8dp"
+                    android:contentDescription="@string/content_description_account_name_icon" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -98,7 +102,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tên tài khoản"
+                        android:text="@string/account_name"
                         android:textSize="14sp"
                         android:textColor="#212121" />
                 </LinearLayout>
@@ -107,13 +111,15 @@
                     android:id="@+id/et_account_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:hint="Điền vào tên tài khoản"
+                    android:hint="@string/hint_account_name"
                     android:textSize="14sp"
                     android:textColor="#EC407A"
                     android:textColorHint="#FFCDD2"
                     android:background="@null"
                     android:gravity="end"
-                    android:minWidth="150dp" />
+                    android:minWidth="150dp"
+                    android:inputType="textCapWords"
+                    android:importantForAutofill="no" />
             </LinearLayout>
 
             <View
@@ -122,7 +128,7 @@
                 android:background="#E0E0E0"
                 android:layout_marginStart="68dp" />
 
-            <!-- Tháng bắng -->
+            <!-- Số dư ban đầu -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -135,7 +141,8 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@android:drawable/ic_menu_report_image"
-                    android:padding="8dp" />
+                    android:padding="8dp"
+                    android:contentDescription="@string/content_description_initial_balance_icon" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -147,17 +154,24 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tháng bắng"
+                        android:text="@string/initial_balance"
                         android:textSize="14sp"
                         android:textColor="#212121" />
                 </LinearLayout>
 
-                <TextView
+                <EditText
+                    android:id="@+id/et_initial_balance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Vui lòng nhập số tiền"
+                    android:hint="@string/hint_initial_balance"
+                    android:inputType="numberDecimal"
                     android:textSize="14sp"
-                    android:textColor="#FFCDD2" />
+                    android:textColor="#EC407A"
+                    android:textColorHint="#FFCDD2"
+                    android:background="@null"
+                    android:gravity="end"
+                    android:minWidth="150dp"
+                    android:importantForAutofill="no" />
             </LinearLayout>
 
             <View
@@ -179,7 +193,8 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@android:drawable/ic_menu_rotate"
-                    android:padding="8dp" />
+                    android:padding="8dp"
+                    android:contentDescription="@string/content_description_currency_icon" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -191,7 +206,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tiền tệ"
+                        android:text="@string/currency"
                         android:textSize="14sp"
                         android:textColor="#212121" />
                 </LinearLayout>
@@ -199,7 +214,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Vui lòng chọn tiền tệ"
+                    android:text="@string/hint_select_currency"
                     android:textSize="14sp"
                     android:textColor="#FFCDD2" />
 
@@ -208,7 +223,8 @@
                     android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_more"
                     app:tint="#EC407A"
-                    android:layout_marginStart="8dp" />
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="@string/content_description_currency_more" />
             </LinearLayout>
 
             <View
@@ -230,7 +246,8 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@android:drawable/ic_menu_camera"
-                    android:padding="8dp" />
+                    android:padding="8dp"
+                    android:contentDescription="@string/icon" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -242,7 +259,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Biểu tượng"
+                        android:text="@string/icon"
                         android:textSize="14sp"
                         android:textColor="#212121" />
                 </LinearLayout>
@@ -251,14 +268,16 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:src="@android:drawable/ic_menu_save"
-                    android:padding="6dp" />
+                    android:padding="6dp"
+                    android:contentDescription="@string/content_description_icon_selection" />
 
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_more"
                     app:tint="#EC407A"
-                    android:layout_marginStart="8dp" />
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="@string/content_description_icon_more" />
             </LinearLayout>
 
             <View
@@ -280,7 +299,8 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@android:drawable/ic_menu_view"
-                    android:padding="8dp" />
+                    android:padding="8dp"
+                    android:contentDescription="@string/content_description_switch_balance_icon" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -292,20 +312,20 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Sử dụng trong số cái hiện tại"
+                        android:text="@string/use_in_current_balance"
                         android:textSize="14sp"
                         android:textColor="#212121" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Được hiển thị trong số cái hiện tại và bao gồm trong tài sản"
+                        android:text="@string/use_in_current_balance_desc"
                         android:textSize="11sp"
                         android:textColor="#999999"
                         android:layout_marginTop="4dp" />
                 </LinearLayout>
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_include_balance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -331,7 +351,8 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@android:drawable/ic_menu_gallery"
-                    android:padding="8dp" />
+                    android:padding="8dp"
+                    android:contentDescription="@string/content_description_switch_stats_icon" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -343,20 +364,20 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Bao gồm như tài sản trong số hiển tại"
+                        android:text="@string/include_in_statistics"
                         android:textSize="14sp"
                         android:textColor="#212121" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Bao gồm trong tài sản hoặc nợ phải trả trong thống kê"
+                        android:text="@string/include_in_statistics_desc"
                         android:textSize="11sp"
                         android:textColor="#999999"
                         android:layout_marginTop="4dp" />
                 </LinearLayout>
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_include_statistics"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -367,7 +388,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Ghi chú"
+                android:text="@string/note_section"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#212121"
@@ -380,19 +401,20 @@
                 android:id="@+id/et_note"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:hint="Điền vào ghi chú tài khoản"
+                android:hint="@string/hint_note"
                 android:textSize="14sp"
                 android:textColorHint="#CCCCCC"
                 android:background="@android:color/white"
                 android:padding="16dp"
                 android:gravity="start|top"
                 android:inputType="textMultiLine"
-                android:maxLength="30" />
+                android:maxLength="30"
+                android:importantForAutofill="no" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="0/30"
+                android:text="@string/char_limit_display"
                 android:textSize="12sp"
                 android:textColor="#999999"
                 android:gravity="end"

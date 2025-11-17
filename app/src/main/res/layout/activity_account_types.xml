@@ -44,6 +44,7 @@
         android:layout_height="match_parent">
 
         <LinearLayout
+            android:id="@+id/activity_account_types_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -51,6 +52,7 @@
 
             <!-- Tiền mặt -->
             <LinearLayout
+                android:id="@+id/item_cash"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -88,6 +90,7 @@
 
             <!-- Thẻ tiền gửi -->
             <LinearLayout
+                android:id="@+id/item_deposit_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -125,6 +128,7 @@
 
             <!-- Thẻ tín dụng -->
             <LinearLayout
+                android:id="@+id/item_credit_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -162,6 +166,7 @@
 
             <!-- Tài khoản ảo -->
             <LinearLayout
+                android:id="@+id/item_virtual_account"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -219,6 +224,7 @@
 
             <!-- Đầu tư -->
             <LinearLayout
+                android:id="@+id/item_investment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -276,6 +282,7 @@
 
             <!-- Phải thu -->
             <LinearLayout
+                android:id="@+id/item_receivable"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -329,10 +336,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#E0E0E0"
-                android:layout_marginStart="80dp" />
+                android:layout_marginStart="80.dp" />
 
             <!-- Phải trả -->
             <LinearLayout
+                android:id="@+id/item_payable"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"

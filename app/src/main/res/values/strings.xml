@@ -1,3 +1,32 @@
 <resources>
     <string name="app_name">ExpenseManagerApp</string>
+    <string name="create_account_header">Tạo tài khoản</string>
+    <string name="create_deposit_card_header">Tạo nền Thẻ tiền gửi</string>
+    <string name="account_info_section">Thông tin tài khoản</string>
+    <string name="account_type_deposit_card">Thẻ tiền gửi</string>
+    <string name="account_name">Tên tài khoản</string>
+    <string name="hint_account_name">Điền vào tên tài khoản</string>
+    <string name="initial_balance">Số dư ban đầu</string>
+    <string name="hint_initial_balance">0.00</string>
+    <string name="currency">Tiền tệ</string>
+    <string name="hint_select_currency">Vui lòng chọn tiền tệ</string>
+    <string name="icon">Biểu tượng</string>
+    <string name="use_in_current_balance">Sử dụng trong số cái hiện tại</string>
+    <string name="use_in_current_balance_desc">Được hiển thị trong số cái hiện tại và bao gồm trong tài sản</string>
+    <string name="include_in_statistics">Bao gồm như tài sản trong số hiển tại</string>
+    <string name="include_in_statistics_desc">Bao gồm trong tài sản hoặc nợ phải trả trong thống kê</string>
+    <string name="note_section">Ghi chú</string>
+    <string name="note">Ghi chú</string>
+    <string name="hint_note">Điền vào ghi chú tài khoản</string>
+    <string name="char_limit_display">0/30</string>
+    <string name="content_description_back">Quay lại</string>
+    <string name="content_description_save">Lưu</string>
+    <string name="content_description_account_name_icon">Biểu tượng Tên tài khoản</string>
+    <string name="content_description_initial_balance_icon">Biểu tượng Số dư ban đầu</string>
+    <string name="content_description_currency_icon">Biểu tượng Tiền tệ</string>
+    <string name="content_description_currency_more">Chọn thêm tiền tệ</string>
+    <string name="content_description_icon_selection">Biểu tượng đã chọn</string>
+    <string name="content_description_icon_more">Chọn thêm biểu tượng</string>
+    <string name="content_description_switch_balance_icon">Biểu tượng công tắc số dư</string>
+    <string name="content_description_switch_stats_icon">Biểu tượng công tắc thống kê</string>
 </resources>
