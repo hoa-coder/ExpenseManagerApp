@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
-    tools:context=".IncomeActivity">
+    tools:context=".AddIncomeActivity">
 
     <!-- Header -->
     <LinearLayout
@@ -25,17 +25,10 @@
             android:padding="4dp" />
 
         <!-- Icon Chi tiêu -->
-        <ImageView
-            android:id="@+id/btn_expense"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@android:drawable/ic_menu_delete"
-            android:layout_marginStart="16dp"
-            android:padding="4dp" />
 
         <!-- Tab Thu nhập -->
         <LinearLayout
-            android:id="@+id/tab_income"
+            android:id="@+id/tab_expense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -44,30 +37,24 @@
             android:layout_marginStart="8dp"
             android:gravity="center">
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@android:drawable/ic_input_add"
-                app:tint="@android:color/white" />
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chi tiêu"
+                android:text="Tab Chi tiêu"
                 android:textColor="@android:color/white"
                 android:textStyle="bold"
                 android:textSize="14sp"
                 android:layout_marginStart="4dp" />
         </LinearLayout>
 
-        <!-- Icon Chuyển khoản -->
+        <!-- Thêm khoản thu -->
         <ImageView
-            android:id="@+id/btn_transfer"
+            android:id="@+id/btn_income"
             android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@android:drawable/ic_menu_send"
+            android:layout_height="29dp"
             android:layout_marginStart="8dp"
-            android:padding="4dp" />
+            android:padding="4dp"
+            android:src="@android:drawable/ic_input_add" />
 
         <View
             android:layout_width="0dp"
@@ -75,13 +62,6 @@
             android:layout_weight="1" />
 
         <!-- Nút hoàn thành -->
-        <ImageView
-            android:id="@+id/btn_done"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@android:drawable/ic_menu_save"
-            app:tint="#EC407A"
-            android:padding="4dp" />
     </LinearLayout>
 
     <ScrollView
@@ -221,6 +201,7 @@
 
             <!-- Grid danh mục thu nhập -->
             <GridLayout
+                android:id="@+id/income_category_grid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:columnCount="4"
@@ -511,7 +492,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tài khoản mặc định(USD)"
+                android:text="Tài khoản mặc định(VND)"
                 android:textSize="10sp"
                 android:textColor="#999999" />
 

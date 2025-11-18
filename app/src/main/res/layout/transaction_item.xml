@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <ImageView
+        android:id="@+id/iv_category_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:contentDescription="Transaction icon"
+        android:src="@android:drawable/ic_menu_crop"
+        app:tint="#FF5252" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_category_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ăn uống"
+            android:textColor="@android:color/black"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ăn trưa với bạn"
+            android:textColor="#757575"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="18/11/2025 14:30"
+            android:textColor="#999999"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="-50.000 đ"
+        android:textColor="#FF5252"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

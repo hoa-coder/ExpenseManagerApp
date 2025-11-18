@@ -29,4 +29,75 @@
     <string name="content_description_icon_more">Chọn thêm biểu tượng</string>
     <string name="content_description_switch_balance_icon">Biểu tượng công tắc số dư</string>
     <string name="content_description_switch_stats_icon">Biểu tượng công tắc thống kê</string>
+
+    <!-- Strings for activity_add_expense.xml -->
+    <string name="content_description_close_btn">Đóng nút</string>
+    <string name="tab_income">Thu Nhập</string>
+    <string name="content_description_add_income">Thêm Thu Nhập</string>
+    <string name="tab_suggest">Đề xuất</string>
+    <string name="content_description_recent_history">Lịch sử gần đây</string>
+    <string name="tab_uncategorized">Chưa nhóm</string>
+    <string name="content_description_preferences">Cài đặt</string>
+    <string name="tab_settings">Cài đặt</string>
+    <string name="content_description_more">Tùy chọn khác</string>
+    <string name="content_description_tip_star">Biểu tượng ngôi sao mẹo</string>
+    <string name="tip_suggested_category">Dựa trên thời quen của bạn, danh mục thường được đề xuất</string>
+    <string name="content_description_tip_close">Đóng mẹo</string>
+    <string name="category_daily">Hàng ngày</string>
+    <string name="category_transportation">Giao thông</string>
+    <string name="category_social">Xã hội</string>
+    <string name="category_gift">Quà tặng</string>
+    <string name="category_communication">Giao tiếp</string>
+    <string name="category_clothing">Quần áo</string>
+    <string name="category_entertainment">Giải trí</string>
+    <string name="category_beauty">Sắc đẹp</string>
+    <string name="category_medical">Y khoa</string>
+    <string name="category_tax">Thuế</string>
+    <string name="category_housing">Dân cư</string>
+    <string name="category_diet">Chế độ ăn</string>
+    <string name="category_education">Giáo dục</string>
+    <string name="category_baby">Đứa bé</string>
+    <string name="category_pet">Vật nuôi</string>
+    <string name="category_travel">Du lịch</string>
+    <string name="content_description_calculator_send">Gửi</string>
+    <string name="input_note_hint">Ghi chú</string>
+    <string name="calculator_bank_currency">bank(VNĐ)</string>
+    <string name="calculator_amount_default">0</string>
+    <string name="category_icon_daily">Biểu tượng sinh nhật (Hàng ngày)</string>
+    <string name="category_icon_transportation">Biểu tượng xe buýt (Giao thông)</string>
+    <string name="category_icon_social">Biểu tượng ly rượu (Xã hội)</string>
+    <string name="category_icon_gift">Biểu tượng hộp quà (Quà tặng)</string>
+    <string name="category_icon_communication">Biểu tượng điện thoại (Giao tiếp)</string>
+    <string name="category_icon_clothing">Biểu tượng cà vạt (Quần áo)</string>
+    <string name="category_icon_entertainment">Biểu tượng clapboard (Giải trí)</string>
+    <string name="category_icon_beauty">Biểu tượng kéo (Sắc đẹp)</string>
+    <string name="category_icon_medical">Biểu tượng viên thuốc (Y khoa)</string>
+    <string name="category_icon_tax">Biểu tượng túi tiền (Thuế)</string>
+    <string name="category_icon_housing">Biểu tượng nhà (Dân cư)</string>
+    <string name="category_icon_diet">Biểu tượng burger (Chế độ ăn)</string>
+    <string name="category_icon_education">Biểu tượng mũ tốt nghiệp (Giáo dục)</string>
+    <string name="category_icon_baby">Biểu tượng em bé (Đứa bé)</string>
+    <string name="category_icon_pet">Biểu tượng dấu chân (Vật nuôi)</string>
+    <string name="category_icon_travel">Biểu tượng ô (Du lịch)</string>
+
+    <!-- Strings for AddIncomeActivity -->
+    <string name="tab_expense">Tab thu nhập</string>
+    <string name="content_description_add_expense_tab">Chuyển sang màn hình thêm chi tiêu</string>
+    <string name="content_description_add_income_save">Lưu thu nhập</string>
+    
+    <string name="category_wage">Tiền công</string>
+    <string name="category_bonus">Tiền thưởng</string>
+    <string name="category_investment">Đầu tư</string>
+    <string name="category_part_time">Bán thời gian</string>
+    <string name="category_refund">Hoàn tiền</string>
+    <string name="category_interest">Lãi suất</string>
+    <string name="category_business">Kinh doanh</string>
+
+    <string name="category_icon_wage">Biểu tượng tiền (Tiền công)</string>
+    <string name="category_icon_bonus">Biểu tượng tiền đô (Tiền thưởng)</string>
+    <string name="category_icon_investment">Biểu tượng biểu đồ (Đầu tư)</string>
+    <string name="category_icon_part_time">Biểu tượng đồng hồ (Bán thời gian)</string>
+    <string name="category_icon_refund">Biểu tượng thẻ tín dụng (Hoàn tiền)</string>
+    <string name="category_icon_interest">Biểu tượng ngân hàng (Lãi suất)</string>
+    <string name="category_icon_business">Biểu tượng cặp tài liệu (Kinh doanh)</string>
 </resources>

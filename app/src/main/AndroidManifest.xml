@@ -13,9 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ExpenseManagerApp">
 
-        <!-- Màn hình thêm chi phí (hiển thị đầu tiên khi mở app) -->
+        <!-- Màn hình chính/sổ sách -->
         <activity
-            android:name=".AddExpenseActivity"
+            android:name=".BooksActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Màn hình đăng nhập (không còn là màn hình khởi chạy chính) -->
+        <!-- Màn hình đăng nhập -->
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
@@ -37,6 +37,29 @@
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
+
+        <!-- Các Activity quản lý tài khoản -->
+        <activity
+            android:name=".ManageAccountsActivity"
+            android:exported="false" />
+            
+        <!-- Các Activity mới được thêm vào -->
+        <activity
+            android:name=".AddExpenseActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddIncomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CreateSavingsGoalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AccountTypesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CreateAccountActivity"
+            android:exported="false" />
+        <!-- Kết thúc các Activity mới được thêm vào -->
 
     </application>
 
