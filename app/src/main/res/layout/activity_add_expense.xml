@@ -27,29 +27,23 @@
 
         <!-- Tab Chi tiêu -->
         <LinearLayout
-            android:id="@+id/tab_expense"
+            android:id="@+id/tab_income"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="@drawable/rounded_pink_bg"
-            android:padding="8dp"
+            android:layout_height="33dp"
             android:layout_marginStart="16dp"
-            android:gravity="center">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@android:drawable/ic_menu_delete"
-                app:tint="@android:color/white" />
+            android:background="@drawable/rounded_pink_bg"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="8dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
                 android:text="Thu Nhập"
                 android:textColor="@android:color/white"
-                android:textStyle="bold"
                 android:textSize="14sp"
-                android:layout_marginStart="4dp" />
+                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- Icon Thu nhập -->

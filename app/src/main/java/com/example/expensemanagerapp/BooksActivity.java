@@ -14,6 +14,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
 
     private FloatingActionButton fabEdit;
     private LinearLayout bottomNavBooks, bottomNavWallet, bottomNavAnalysis, bottomNavAdd;
+    private LinearLayout llAddGoal; // Khai báo View mới
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +24,9 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         // Khởi tạo các View
         fabEdit = findViewById(R.id.fab_edit);
         
+        // Khởi tạo mục tiêu
+        llAddGoal = findViewById(R.id.ll_add_goal); // Tìm kiếm ID mới
+
         // Tìm view cha của các mục điều hướng.
         LinearLayout bottomNavigation = findViewById(R.id.bottom_navigation);
 
@@ -36,6 +40,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         
         // Cài đặt sự kiện OnClick
         fabEdit.setOnClickListener(this);
+        llAddGoal.setOnClickListener(this); // Thêm listener cho mục tiêu
         bottomNavBooks.setOnClickListener(this);
         bottomNavWallet.setOnClickListener(this);
         bottomNavAnalysis.setOnClickListener(this);
@@ -60,25 +65,27 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
     public void onClick(View v) {
         // Sử dụng if-else vì các View không có ID trực tiếp
         if (v == fabEdit) {
-            // Nút này có thể dùng để thêm một giao dịch mới. Giả sử nó sẽ chuyển đến AddExpenseActivity.
-            // Intent intent = new Intent(this, AddExpenseActivity.class);
-            // startActivity(intent);
-            Toast.makeText(this, "Đã nhấp vào thêm giao dịch mới", Toast.LENGTH_SHORT).show();
+            // Mở AddExpenseActivity
+            Intent intent = new Intent(this, AddExpenseActivity.class);
+            startActivity(intent);
+        } else if (v == llAddGoal) {
+            // Mở CreateSavingsGoalActivity
+            Intent intent = new Intent(this, CreateSavingsGoalActivity.class);
+            startActivity(intent);
         } else if (v == bottomNavBooks) {
             // Đã ở trên màn hình này
             Toast.makeText(this, "Bạn đang ở màn hình Sổ sách", Toast.LENGTH_SHORT).show();
         } else if (v == bottomNavWallet) {
-            // Điều hướng đến WalletActivity
-            // Intent intent = new Intent(this, WalletActivity.class);
-            // startActivity(intent);
-            Toast.makeText(this, "Điều hướng đến Ví", Toast.LENGTH_SHORT).show();
+            // Điều hướng đến ManageAccountsActivity (Ví tiền)
+            Intent intent = new Intent(this, ManageAccountsActivity.class);
+            startActivity(intent);
         } else if (v == bottomNavAnalysis) {
             // Điều hướng đến AnalysisActivity
             // Intent intent = new Intent(this, AnalysisActivity.class);
             // startActivity(intent);
              Toast.makeText(this, "Điều hướng đến Phân tích", Toast.LENGTH_SHORT).show();
         } else if (v == bottomNavAdd) {
-            // Đây có thể là một lối tắt để thêm một cái gì đó, tương tự như FAB
+            // Đây có thể là một lối tắt để thêm một cái gì đó
             // Intent intent = new Intent(this, AddTransactionActivity.class); // Hoặc một hộp thoại lựa chọn
             // startActivity(intent);
              Toast.makeText(this, "Điều hướng đến màn hình Thêm", Toast.LENGTH_SHORT).show();

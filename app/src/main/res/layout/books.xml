@@ -347,6 +347,7 @@
 
             <!-- Goals grid -->
             <LinearLayout
+                android:id="@+id/ll_goals_grid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -354,6 +355,7 @@
                 android:layout_marginBottom="8dp">
 
                 <LinearLayout
+                    android:id="@+id/ll_add_goal"
                     android:layout_width="0dp"
                     android:layout_height="80dp"
                     android:layout_weight="1"

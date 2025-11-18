@@ -35,7 +35,7 @@
 
         <!-- Tab Thu nhập -->
         <LinearLayout
-            android:id="@+id/tab_income"
+            android:id="@+id/tab_expense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -43,12 +43,6 @@
             android:padding="8dp"
             android:layout_marginStart="8dp"
             android:gravity="center">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@android:drawable/ic_input_add"
-                app:tint="@android:color/white" />
 
             <TextView
                 android:layout_width="wrap_content"
