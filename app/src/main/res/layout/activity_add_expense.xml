@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
-    tools:context=".AddExpenseActivity">
+    tools:context=".MainActivity">
 
     <!-- Header -->
     <LinearLayout
@@ -23,36 +23,50 @@
             android:layout_height="32dp"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
             app:tint="#EC407A"
-            android:padding="4dp"
-            android:contentDescription="@string/content_description_close_btn" />
+            android:padding="4dp" />
 
-        <!-- Sang tab thu nhập (Active) -->
+        <!-- Tab Chi tiêu -->
         <LinearLayout
-            android:id="@+id/tab_income"
+            android:id="@+id/tab_expense"
             android:layout_width="wrap_content"
-            android:layout_height="33dp"
-            android:layout_marginStart="16dp"
-            android:background="@drawable/rounded_pink_bg"
-            android:gravity="center"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="8dp">
+            android:background="@drawable/rounded_pink_bg"
+            android:padding="8dp"
+            android:layout_marginStart="16dp"
+            android:gravity="center">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_delete"
+                app:tint="@android:color/white" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:text="@string/tab_expense"
+                android:text="Thu Nhập"
                 android:textColor="@android:color/white"
+                android:textStyle="bold"
                 android:textSize="14sp"
-                android:textStyle="bold" />
+                android:layout_marginStart="4dp" />
         </LinearLayout>
 
-        <!-- Thêm khoản chi -->
+        <!-- Icon Thu nhập -->
         <ImageView
-            android:id="@+id/btn_expense"
+            android:id="@+id/btn_income"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@android:drawable/ic_input_add"
+            android:layout_marginStart="16dp"
+            android:padding="4dp" />
+
+        <!-- Icon Chuyển khoản -->
+        <ImageView
+            android:id="@+id/btn_transfer"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_send"
             android:layout_marginStart="8dp"
             android:padding="4dp" />
 
@@ -61,8 +75,14 @@
             android:layout_height="1dp"
             android:layout_weight="1" />
 
-        <!-- Nút hoàn thành / Lưu chi tiêu -->
-
+        <!-- Nút hoàn thành -->
+        <ImageView
+            android:id="@+id/btn_done"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_save"
+            app:tint="#EC407A"
+            android:padding="4dp" />
     </LinearLayout>
 
     <ScrollView
@@ -77,72 +97,98 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Tabs: Đề xuất / Chưa nhóm / Cài đặt (Không đổi) -->
+            <!-- Tabs: Đề xuất / Chưa nhóm / Cài đặt -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginBottom="16dp">
 
-                <TextView
+                <LinearLayout
                     android:id="@+id/tab_suggest"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:background="#FFF0F5"
                     android:padding="12dp"
                     android:gravity="center"
-                    android:layout_marginEnd="4dp"
-                    android:background="#FFF0F5"
-                    android:text="@string/tab_suggest"
-                    android:textColor="#EC407A"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:drawableStart="@android:drawable/btn_star_big_on"
-                    android:drawablePadding="4dp"
-                    app:drawableTint="#EC407A"
-                    android:contentDescription="@string/content_description_tip_star" />
+                    android:layout_marginEnd="4dp">
 
-                <TextView
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@android:drawable/btn_star_big_on"
+                        app:tint="#EC407A" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Đề xuất"
+                        android:textColor="#EC407A"
+                        android:textStyle="bold"
+                        android:textSize="14sp"
+                        android:layout_marginStart="4dp" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/tab_uncategorized"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:orientation="horizontal"
                     android:padding="12dp"
                     android:gravity="center"
                     android:layout_marginStart="4dp"
-                    android:layout_marginEnd="4dp"
-                    android:text="@string/tab_uncategorized"
-                    android:textColor="#757575"
-                    android:textSize="14sp"
-                    android:drawableStart="@android:drawable/ic_menu_recent_history"
-                    android:drawablePadding="4dp"
-                    android:contentDescription="@string/content_description_recent_history" />
+                    android:layout_marginEnd="4dp">
 
-                <TextView
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@android:drawable/ic_menu_recent_history" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chưa nhóm"
+                        android:textColor="#757575"
+                        android:textSize="14sp"
+                        android:layout_marginStart="4dp" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/tab_settings"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:orientation="horizontal"
                     android:padding="12dp"
                     android:gravity="center"
-                    android:layout_marginStart="4dp"
-                    android:text="@string/tab_settings"
-                    android:textColor="#757575"
-                    android:textSize="14sp"
-                    android:drawableStart="@android:drawable/ic_menu_preferences"
-                    android:drawablePadding="4dp"
-                    android:contentDescription="@string/content_description_preferences" />
+                    android:layout_marginStart="4dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@android:drawable/ic_menu_preferences" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cài đặt"
+                        android:textColor="#757575"
+                        android:textSize="14sp"
+                        android:layout_marginStart="4dp" />
+                </LinearLayout>
 
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_more"
                     android:layout_gravity="center"
-                    android:layout_marginStart="8dp"
-                    android:contentDescription="@string/content_description_more" />
+                    android:layout_marginStart="8dp" />
             </LinearLayout>
 
-            <!-- Tip message (Không đổi) -->
+            <!-- Tip message -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -156,14 +202,13 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@android:drawable/btn_star"
-                    app:tint="#EC407A"
-                    android:contentDescription="@string/content_description_tip_star" />
+                    app:tint="#EC407A" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/tip_suggested_category"
+                    android:text="Dựa trên thời quen của bạn, danh mục thường được đề xuất"
                     android:textColor="#EC407A"
                     android:textSize="12sp"
                     android:layout_marginStart="8dp" />
@@ -172,11 +217,10 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@android:drawable/ic_menu_close_clear_cancel"
-                    app:tint="#EC407A"
-                    android:contentDescription="@string/content_description_tip_close" />
+                    app:tint="#EC407A" />
             </LinearLayout>
 
-            <!-- Grid danh mục chi tiêu (Không đổi) -->
+            <!-- Grid danh mục chi tiêu -->
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -193,22 +237,19 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:padding="8dp"
-                    android:background="@drawable/category_selected"
-                    android:tag="@string/category_daily"
-                    android:onClick="onCategoryClick">
+                    android:background="@drawable/category_selected">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="🎂"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_daily" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_daily"
+                        android:text="Hàng ngày"
                         android:textSize="12sp"
                         android:textColor="#EC407A"
                         android:textStyle="bold"
@@ -222,22 +263,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_transportation"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="🚌"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_transportation" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_transportation"
+                        android:text="Giao thông"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -250,22 +288,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_social"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="🥂"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_social" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_social"
+                        android:text="Xã hội"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -278,22 +313,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_gift"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="🎁"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_gift" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_gift"
+                        android:text="Quà tặng"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -307,22 +339,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_communication"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="📱"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_communication" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_communication"
+                        android:text="Giao tiếp"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -335,22 +364,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_clothing"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="👔"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_clothing" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_clothing"
+                        android:text="Quần áo"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -363,22 +389,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_entertainment"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="🎬"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_entertainment" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_entertainment"
+                        android:text="Giải trí"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -391,22 +414,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_beauty"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="✂️"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_beauty" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_beauty"
+                        android:text="Sắc đẹp"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -420,22 +440,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="4dp"
-                    android:tag="@string/category_medical"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="💊"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_medical" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_medical"
+                        android:text="Y khoa"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -448,22 +465,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_tax"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="💰"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_tax" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_tax"
+                        android:text="Thuế"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -476,22 +490,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_housing"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="🏠"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_housing" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_housing"
+                        android:text="Dân cư"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -504,22 +515,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_diet"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="🍔"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_diet" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_diet"
+                        android:text="Chế độ ăn"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -533,22 +541,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_education"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="🎓"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_education" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_education"
+                        android:text="Giáo dục"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -561,22 +566,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_baby"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="👶"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_baby" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_baby"
+                        android:text="Đứa bé"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -589,22 +591,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_pet"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
-                    android:layout_height="48dp"
+                        android:layout_height="48dp"
                         android:text="🐾"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_pet" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_pet"
+                        android:text="Vật nuôi"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -617,22 +616,19 @@
                     android:layout_columnWeight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:tag="@string/category_travel"
-                    android:onClick="onCategoryClick">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:text="⛱️"
                         android:textSize="32sp"
-                        android:gravity="center"
-                        android:contentDescription="@string/category_icon_travel" />
+                        android:gravity="center" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/category_travel"
+                        android:text="Du lịch"
                         android:textSize="12sp"
                         android:textColor="#212121"
                         android:gravity="center"
@@ -651,7 +647,7 @@
         android:layout_alignParentBottom="true"
         android:orientation="vertical"
         android:background="@drawable/calculator_bg"
-        android:padding="7dp">
+        android:padding="16dp">
 
         <!-- Dots indicator -->
         <LinearLayout
@@ -686,7 +682,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:background="@android:color/white"
-            android:padding="8dp"
+            android:padding="12dp"
             android:layout_marginBottom="8dp"
             android:gravity="center_vertical">
 
@@ -701,8 +697,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_send"
-                    android:contentDescription="@string/content_description_calculator_send" />
+                    android:src="@android:drawable/ic_menu_send" />
             </LinearLayout>
 
             <EditText
@@ -710,19 +705,16 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="@string/input_note_hint"
+                android:hint="Ghi chú"
                 android:textSize="16sp"
                 android:background="@null"
                 android:padding="8dp"
-                android:layout_marginStart="8dp"
-                android:inputType="text"
-                android:focusable="true"
-                android:focusableInTouchMode="true" />
+                android:layout_marginStart="8dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/calculator_bank_currency"
+                android:text="bank(CNY)"
                 android:textSize="12sp"
                 android:textColor="#999999" />
 
@@ -730,7 +722,7 @@
                 android:id="@+id/tv_amount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/calculator_amount_default"
+                android:text="0"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="#212121"
