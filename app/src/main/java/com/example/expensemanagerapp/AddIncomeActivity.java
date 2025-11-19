@@ -224,7 +224,7 @@ public class AddIncomeActivity extends AppCompatActivity implements View.OnClick
         // Transaction("type", amount, category, note, timestamp)
         Transaction newTransaction = new Transaction("income", amount, selectedCategory, note, timestamp);
         JsonHelper.addTransaction(this, newTransaction);
-        
+
         // --- FIX: Gửi Transaction object trực tiếp về cho Activity gọi để cập nhật ngay lập tức ---
         Intent resultIntent = new Intent();
         resultIntent.putExtra("NEW_TRANSACTION", newTransaction);

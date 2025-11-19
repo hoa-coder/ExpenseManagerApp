@@ -213,12 +213,15 @@
 
             <!-- Ngày bắt đầu -->
             <LinearLayout
+                android:id="@+id/layout_start_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:padding="16dp"
                 android:gravity="center_vertical"
-                android:background="@android:color/white">
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="40dp"
@@ -251,10 +254,10 @@
 
                 <ImageView
                     android:layout_width="24dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_more"
-                    app:tint="#EC407A" />
+                    app:tint="#EC407A"
+                    android:layout_marginStart="8dp" />
             </LinearLayout>
 
             <View
@@ -265,12 +268,15 @@
 
             <!-- Ngày kết thúc -->
             <LinearLayout
+                android:id="@+id/layout_end_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:padding="16dp"
                 android:gravity="center_vertical"
-                android:background="@android:color/white">
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="40dp"
@@ -317,12 +323,15 @@
 
             <!-- Biểu tượng -->
             <LinearLayout
+                android:id="@+id/layout_icon"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:padding="16dp"
                 android:gravity="center_vertical"
-                android:background="@android:color/white">
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="40dp"
@@ -346,6 +355,7 @@
                 </LinearLayout>
 
                 <TextView
+                    android:id="@+id/tv_icon_emoji"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:text="🚗"
@@ -368,12 +378,15 @@
 
             <!-- Màu sắc -->
             <LinearLayout
+                android:id="@+id/layout_color"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:padding="16dp"
                 android:gravity="center_vertical"
-                android:background="@android:color/white">
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="40dp"
@@ -397,6 +410,7 @@
                 </LinearLayout>
 
                 <View
+                    android:id="@+id/view_color_preview"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:background="#FF6B9D" />
@@ -426,16 +440,17 @@
                 android:id="@+id/et_note"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:hint="Thêm ghi chú cho mục tiêu của bạn..."
-                android:textSize="14sp"
-                android:textColorHint="#CCCCCC"
                 android:background="@android:color/white"
-                android:padding="16dp"
                 android:gravity="start|top"
+                android:hint="Thêm ghi chú cho mục tiêu của bạn..."
                 android:inputType="textMultiLine"
-                android:maxLength="200" />
+                android:maxLength="200"
+                android:padding="16dp"
+                android:textColorHint="#CCCCCC"
+                android:textSize="14sp" />
 
             <TextView
+                android:id="@+id/tv_note_counter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="0/200"

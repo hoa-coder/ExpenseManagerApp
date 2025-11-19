@@ -48,7 +48,7 @@ public class AccountTypesActivity extends AppCompatActivity implements View.OnCl
         itemCreditCard.setOnClickListener(this);
         // ...
         */
-        
+
         // Hiển thị thông báo tạm thời vì chưa có ID trong XML
         Toast.makeText(this, "Vui lòng thêm ID cho các mục để kích hoạt sự kiện click.", Toast.LENGTH_LONG).show();
 
