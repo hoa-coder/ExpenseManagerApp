@@ -149,42 +149,51 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- Month/Year -->
+                    <!-- Header cho chọn tháng và icon ẩn/hiện -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center"
+                        android:gravity="center_vertical"
                         android:layout_marginBottom="16dp">
-
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@android:drawable/ic_menu_agenda"
-                            android:contentDescription="Agenda icon" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
+                        
+                        <!-- Layout chọn tháng/năm -->
+                        <LinearLayout
+                            android:id="@+id/month_year_picker_layout"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="6/2025"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:layout_marginStart="8dp"
-                            android:layout_marginEnd="8dp"
-                            app:drawableEndCompat="@android:drawable/arrow_down_float" />
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:gravity="center"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:padding="8dp">
+                            
+                            <TextView
+                                android:id="@+id/tv_selected_month_year"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="6/2025"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:layout_marginStart="8dp"
+                                android:layout_marginEnd="8dp"
+                                app:drawableEndCompat="@android:drawable/arrow_down_float" />
+                        </LinearLayout>
 
+                        <!-- Icon ẩn/hiện số tiền -->
                         <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@android:drawable/ic_menu_save"
-                            android:contentDescription="Save icon" />
-
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@android:drawable/ic_menu_compass"
-                            android:layout_marginStart="8dp"
-                            android:contentDescription="Compass icon" />
+                            android:id="@+id/iv_toggle_visibility"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@android:drawable/ic_menu_view"
+                            android:contentDescription="Toggle visibility"
+                            android:layout_marginStart="16dp"
+                            android:padding="4dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:tint="#616161" />
                     </LinearLayout>
 
                     <!-- Financial figures -->
@@ -203,6 +212,7 @@
                             android:gravity="center">
 
                             <TextView
+                                android:id="@+id/tv_total_amount"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="$9,040.94"
@@ -229,6 +239,7 @@
                             android:gravity="center">
 
                             <TextView
+                                android:id="@+id/tv_income_amount"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="$10,000"
@@ -255,6 +266,7 @@
                             android:gravity="center">
 
                             <TextView
+                                android:id="@+id/tv_expense_amount"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="$959.06"
