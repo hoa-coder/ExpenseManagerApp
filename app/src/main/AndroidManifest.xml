@@ -65,6 +65,11 @@
         <activity
             android:name=".CreateAccountActivity"
             android:exported="false" />
+        
+        <!-- KHAI BÁO THIẾU: GoalDetailActivity -->
+        <activity
+            android:name=".GoalDetailActivity"
+            android:exported="false" />
         <!-- Kết thúc các Activity mới được thêm vào -->
 
     </application>

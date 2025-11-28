@@ -1,10 +1,12 @@
 package com.example.expensemanagerapp;
 
+import java.io.Serializable;
+
 /**
  * Model class for a user's savings goal.
  * Compatible with Firebase Firestore.
  */
-public class Goal {
+public class Goal implements Serializable { // Đã thêm implements Serializable
     private String id;
     private String name;
     private double targetAmount;

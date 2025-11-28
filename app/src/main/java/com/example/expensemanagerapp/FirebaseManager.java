@@ -75,7 +75,7 @@ public class FirebaseManager {
     }
     
     /**
-     * Lưu một mục tiêu tiết kiệm vào Firestore.
+     * Lưu một mục tiêu tiết kiệm mới.
      */
     public void saveGoal(Goal goal, OnCompleteListener listener) {
         CollectionReference ref = getUserCollectionRef(GOALS_COLLECTION);
@@ -88,6 +88,46 @@ public class FirebaseManager {
            .addOnSuccessListener(documentReference -> {
                goal.setId(documentReference.getId());
                listener.onSuccess("Mục tiêu đã được lưu với ID: " + documentReference.getId());
+           })
+           .addOnFailureListener(e -> {
+               listener.onFailure(e);
+           });
+    }
+    
+    /**
+     * Cập nhật thông tin hoặc số tiền hiện tại của một mục tiêu đã có.
+     */
+    public void updateGoal(Goal goal, OnCompleteListener listener) {
+        CollectionReference ref = getUserCollectionRef(GOALS_COLLECTION);
+        if (ref == null || goal.getId() == null) {
+            listener.onFailure(new Exception("User not logged in or Goal ID is missing."));
+            return;
+        }
+
+        ref.document(goal.getId())
+           .set(goal) // set(goal) sẽ ghi đè toàn bộ tài liệu
+           .addOnSuccessListener(aVoid -> {
+               listener.onSuccess("Mục tiêu đã được cập nhật thành công.");
+           })
+           .addOnFailureListener(e -> {
+               listener.onFailure(e);
+           });
+    }
+    
+    /**
+     * Xóa một mục tiêu.
+     */
+    public void deleteGoal(String goalId, OnCompleteListener listener) {
+        CollectionReference ref = getUserCollectionRef(GOALS_COLLECTION);
+        if (ref == null || goalId == null) {
+            listener.onFailure(new Exception("User not logged in or Goal ID is missing."));
+            return;
+        }
+
+        ref.document(goalId)
+           .delete()
+           .addOnSuccessListener(aVoid -> {
+               listener.onSuccess("Mục tiêu đã được xóa thành công.");
            })
            .addOnFailureListener(e -> {
                listener.onFailure(e);

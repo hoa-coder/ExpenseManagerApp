@@ -36,6 +36,7 @@ import java.util.Map;
 public class BooksActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int ADD_TRANSACTION_REQUEST = 1;
+    private static final int EDIT_GOAL_REQUEST = 2; // Request code mới
     private static final String TAG = "BooksActivity";
 
     private FloatingActionButton fabEdit;
@@ -44,6 +45,9 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
     private LinearLayout llGoalsGrid;
     private LinearLayout llTransactions;
     private TextView tvSeeAllTransactions;
+
+    // Lưu trữ danh sách mục tiêu đã tải để truy cập nhanh khi người dùng click
+    private Map<String, Goal> loadedGoalsMap = new HashMap<>();
 
     private Map<String, Boolean> expandedDates = new HashMap<>();
     private Map<String, LinearLayout> transactionContainers = new HashMap<>();
@@ -111,6 +115,8 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         loadSavingsGoals();
     }
 
+    // ... (Các hàm loadDashboardData, processAndDisplayTransactions, updateDaySummary, addDayGroupHeader, etc. giữ nguyên) ...
+
     /**
      * Tải dữ liệu giao dịch từ Firebase Firestore.
      */
@@ -128,7 +134,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
             return;
         }
 
-        Toast.makeText(this, "Đang tải giao dịch từ Firebase...", Toast.LENGTH_SHORT).show();
+        // Toast.makeText(this, "Đang tải giao dịch từ Firebase...", Toast.LENGTH_SHORT).show();
 
         transactionsRef.orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
@@ -148,7 +154,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
                     processAndDisplayTransactions(transactions);
 
                     if (transactions.isEmpty()) {
-                         Toast.makeText(this, "Chưa có giao dịch nào.", Toast.LENGTH_SHORT).show();
+                         // Toast.makeText(this, "Chưa có giao dịch nào.", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -412,8 +418,12 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == ADD_TRANSACTION_REQUEST && resultCode == RESULT_OK) {
-            loadDashboardData();
+        if (resultCode == RESULT_OK) {
+            if (requestCode == ADD_TRANSACTION_REQUEST) {
+                loadDashboardData();
+            } else if (requestCode == EDIT_GOAL_REQUEST) {
+                loadSavingsGoals(); // Tải lại danh sách mục tiêu sau khi chỉnh sửa/xóa
+            }
         }
     }
 
@@ -429,6 +439,9 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         
         CollectionReference goalsRef = manager.getUserCollectionRef(FirebaseManager.GOALS_COLLECTION);
         if (goalsRef == null) return;
+        
+        // Xóa map cũ và tạo lại map mới
+        loadedGoalsMap.clear();
 
         goalsRef.orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
@@ -439,6 +452,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
                             Goal goal = document.toObject(Goal.class);
                             goal.setId(document.getId());
                             goals.add(goal);
+                            loadedGoalsMap.put(goal.getId(), goal); // Lưu vào Map
                         } catch (Exception e) {
                             Log.e(TAG, "Error converting document to Goal: " + e.getMessage());
                         }
@@ -522,12 +536,16 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         tvPercentage.setGravity(android.view.Gravity.CENTER);
         layout.addView(tvPercentage);
 
-        // Thêm click listener để xem chi tiết
+        // THAY THẾ LOGIC: Mở GoalDetailActivity và truyền object Goal
         layout.setOnClickListener(v -> {
-            Toast.makeText(this,
-                    "Chi tiết: " + name + " - " + percentage + "% (ID: " + goalId + ")",
-                    Toast.LENGTH_SHORT).show();
-            // TODO: Mở activity chi tiết mục tiêu
+            Goal selectedGoal = loadedGoalsMap.get(goalId);
+            if (selectedGoal != null) {
+                Intent intent = new Intent(this, GoalDetailActivity.class);
+                intent.putExtra(GoalDetailActivity.EXTRA_GOAL, selectedGoal);
+                startActivityForResult(intent, EDIT_GOAL_REQUEST); // Sử dụng startActivityForResult
+            } else {
+                Toast.makeText(this, "Lỗi: Không tìm thấy chi tiết mục tiêu.", Toast.LENGTH_SHORT).show();
+            }
         });
 
         return layout;
