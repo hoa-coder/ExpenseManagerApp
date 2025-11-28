@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.gms.google-services' // Đã thêm plugin Google Services
 }
 
 android {
@@ -37,5 +38,9 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     // Thêm Gson dependency để JsonHelper hoạt động
     implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'com.google.firebase:firebase-auth:22.3.1'
+
+    // Firebase dependencies: Sử dụng BOM để quản lý phiên bản
+    implementation platform('com.google.firebase:firebase-bom:34.6.0')
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-firestore'
 }

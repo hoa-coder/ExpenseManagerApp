@@ -13,14 +13,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ExpenseManagerApp">
 
-        <!-- Màn hình chính/sổ sách -->
+        <!-- Màn hình chính/sổ sách: Không còn là LAUNCHER -->
         <activity
             android:name=".BooksActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:exported="false"> 
         </activity>
 
         <!-- Màn hình đăng nhập -->
@@ -28,14 +24,24 @@
             android:name=".LoginActivity"
             android:exported="false" />
 
-        <!-- Màn hình chính sau khi đăng nhập -->
+        <!-- Màn hình chính sau khi đăng nhập: Đặt làm LAUNCHER/MAIN Activity -->
         <activity
             android:name=".MainActivity"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <!-- Màn hình đăng ký tài khoản -->
         <activity
             android:name=".RegisterActivity"
+            android:exported="false" />
+            
+        <!-- Màn hình thông tin tài khoản (Mới) -->
+        <activity
+            android:name=".AccountActivity"
             android:exported="false" />
 
         <!-- Các Activity quản lý tài khoản -->

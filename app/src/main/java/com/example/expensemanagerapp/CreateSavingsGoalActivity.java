@@ -1,8 +1,6 @@
 package com.example.expensemanagerapp;
 
 import android.app.DatePickerDialog;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -16,9 +14,9 @@ import java.util.Calendar;
 import java.util.Locale;
 
 /**
- * Activity để tạo mới mục tiêu tiết kiệm
+ * Activity để tạo mới mục tiêu tiết kiệm, lưu vào Firebase Firestore.
  */
-public class CreateSavingsGoalActivity extends AppCompatActivity {
+public class CreateSavingsGoalActivity extends AppCompatActivity implements FirebaseManager.OnCompleteListener {
 
     private EditText etGoalName;
     private EditText etTargetAmount;
@@ -32,7 +30,6 @@ public class CreateSavingsGoalActivity extends AppCompatActivity {
     private Calendar endDateCalendar = Calendar.getInstance();
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-    private static final String PREFS_NAME = "SavingsGoalsPrefs";
     private String selectedIcon = "🚗"; // Icon mặc định
 
     @Override
@@ -126,7 +123,12 @@ public class CreateSavingsGoalActivity extends AppCompatActivity {
                 (view, year, month, dayOfMonth) -> {
                     startDateCalendar.set(year, month, dayOfMonth);
                     tvStartDate.setText(dateFormatter.format(startDateCalendar.getTime()));
-                    tvStartDate.setTextColor(getResources().getColor(R.color.pink));
+                    // Giả sử có R.color.pink hoặc dùng màu cố định
+                    try {
+                        tvStartDate.setTextColor(getResources().getColor(R.color.pink));
+                    } catch (android.content.res.Resources.NotFoundException e) {
+                        tvStartDate.setTextColor(0xFFFF6B9D); // Màu hồng từ books.xml
+                    }
                 },
                 startDateCalendar.get(Calendar.YEAR),
                 startDateCalendar.get(Calendar.MONTH),
@@ -144,7 +146,12 @@ public class CreateSavingsGoalActivity extends AppCompatActivity {
                 (view, year, month, dayOfMonth) -> {
                     endDateCalendar.set(year, month, dayOfMonth);
                     tvEndDate.setText(dateFormatter.format(endDateCalendar.getTime()));
-                    tvEndDate.setTextColor(getResources().getColor(R.color.pink));
+                    // Giả sử có R.color.pink hoặc dùng màu cố định
+                    try {
+                        tvEndDate.setTextColor(getResources().getColor(R.color.pink));
+                    } catch (android.content.res.Resources.NotFoundException e) {
+                        tvEndDate.setTextColor(0xFFFF6B9D); // Màu hồng từ books.xml
+                    }
                 },
                 endDateCalendar.get(Calendar.YEAR),
                 endDateCalendar.get(Calendar.MONTH),
@@ -178,7 +185,7 @@ public class CreateSavingsGoalActivity extends AppCompatActivity {
     }
 
     /**
-     * Lưu mục tiêu tiết kiệm
+     * Lưu mục tiêu tiết kiệm vào Firebase Firestore
      */
     private void saveSavingsGoal() {
         // Lấy dữ liệu từ form
@@ -189,16 +196,9 @@ public class CreateSavingsGoalActivity extends AppCompatActivity {
         String endDate = tvEndDate.getText().toString();
         String note = etNote.getText().toString().trim();
 
-        // Validation
-        if (goalName.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập tên mục tiêu", Toast.LENGTH_SHORT).show();
-            etGoalName.requestFocus();
-            return;
-        }
-
-        if (targetAmountStr.isEmpty() || targetAmountStr.equals("0")) {
-            Toast.makeText(this, "Vui lòng nhập số tiền mục tiêu", Toast.LENGTH_SHORT).show();
-            etTargetAmount.requestFocus();
+        // Validation (giữ nguyên logic validation)
+        if (goalName.isEmpty() || targetAmountStr.isEmpty() || targetAmountStr.equals("0") || startDate.equals("Chọn ngày") || endDate.equals("Chọn ngày")) {
+            Toast.makeText(this, "Vui lòng điền đủ các thông tin cần thiết.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -213,7 +213,7 @@ public class CreateSavingsGoalActivity extends AppCompatActivity {
         }
 
         try {
-            if (!currentAmountStr.isEmpty() && !currentAmountStr.equals("0")) {
+            if (!currentAmountStr.isEmpty()) {
                 currentAmount = Double.parseDouble(currentAmountStr);
             }
         } catch (NumberFormatException e) {
@@ -221,62 +221,37 @@ public class CreateSavingsGoalActivity extends AppCompatActivity {
             return;
         }
 
-        if (startDate.equals("Chọn ngày")) {
-            Toast.makeText(this, "Vui lòng chọn ngày bắt đầu", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (endDate.equals("Chọn ngày")) {
-            Toast.makeText(this, "Vui lòng chọn ngày kết thúc", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Kiểm tra ngày kết thúc phải sau ngày bắt đầu
         if (endDateCalendar.before(startDateCalendar)) {
             Toast.makeText(this, "Ngày kết thúc phải sau ngày bắt đầu", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Lưu vào SharedPreferences
-        SharedPreferences sharedPref = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
+        // Tạo đối tượng Goal
+        Goal newGoal = new Goal(
+                null, // ID sẽ được Firestore tạo
+                goalName,
+                targetAmount,
+                currentAmount,
+                startDate,
+                endDate,
+                selectedIcon,
+                note,
+                System.currentTimeMillis()
+        );
 
-        // Tạo key duy nhất dựa trên timestamp
-        long timestamp = System.currentTimeMillis();
-        String goalKey = "goal_" + timestamp;
+        // Lưu vào Firebase Firestore
+        FirebaseManager.getInstance().saveGoal(newGoal, this);
+    }
 
-        editor.putString(goalKey + "_name", goalName);
-        editor.putString(goalKey + "_target", String.valueOf(targetAmount));
-        editor.putString(goalKey + "_current", String.valueOf(currentAmount));
-        editor.putString(goalKey + "_start_date", startDate);
-        editor.putString(goalKey + "_end_date", endDate);
-        editor.putString(goalKey + "_icon", selectedIcon);
-        editor.putString(goalKey + "_note", note);
-        editor.putLong(goalKey + "_timestamp", timestamp);
-
-        // Lưu danh sách các key
-        String existingKeys = sharedPref.getString("goal_keys", "");
-        if (!existingKeys.isEmpty()) {
-            existingKeys += ",";
-        }
-        existingKeys += goalKey;
-        editor.putString("goal_keys", existingKeys);
-
-        editor.apply();
-
-        // Tính phần trăm hoàn thành
-        double percentage = (currentAmount / targetAmount) * 100;
-
-        Toast.makeText(this,
-                "Đã lưu mục tiêu:\n" +
-                        "Tên: " + goalName + "\n" +
-                        "Mục tiêu: " + formatCurrency(targetAmount) + " VND\n" +
-                        "Hiện tại: " + formatCurrency(currentAmount) + " VND\n" +
-                        "Hoàn thành: " + String.format("%.1f", percentage) + "%\n" +
-                        "Icon: " + selectedIcon,
-                Toast.LENGTH_LONG).show();
-
+    @Override
+    public void onSuccess(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         finish();
+    }
+
+    @Override
+    public void onFailure(Exception e) {
+        Toast.makeText(this, "Lỗi khi lưu mục tiêu: " + e.getMessage(), Toast.LENGTH_LONG).show();
     }
 
     /**

@@ -48,6 +48,7 @@
         </LinearLayout>
 
         <!-- Thêm khoản thu -->
+
         <ImageView
             android:id="@+id/btn_income"
             android:layout_width="32dp"

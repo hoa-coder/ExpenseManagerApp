@@ -13,21 +13,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+public class AddExpenseActivity extends AppCompatActivity implements View.OnClickListener, FirebaseManager.OnCompleteListener {
 
-public class AddExpenseActivity extends AppCompatActivity implements View.OnClickListener {
-
-    private static final int ADD_INCOME_REQUEST = 2; // Define request code for Income
+    private static final int ADD_INCOME_REQUEST = 2;
     private TextView tvAmount;
     private EditText inputNote;
     private LinearLayout calculatorSection;
     private StringBuilder currentInput = new StringBuilder();
     private String selectedCategory = "Hàng ngày";
     private View selectedCategoryView = null;
+
+    private Transaction pendingTransaction = null; // Dùng để lưu transaction trước khi gửi đi
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +40,18 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
         LinearLayout tabIncome = findViewById(R.id.tab_income);
         ImageView btnExpense = findViewById(R.id.btn_expense);
 
-        btnClose.setOnClickListener(v -> finish());
+        btnClose.setOnClickListener(v -> {
+            // Tạo Intent để chuyển về BooksActivity
+            // Bạn cần đảm bảo class BooksActivity tồn tại
+            Intent intent = new Intent(AddExpenseActivity.this, BooksActivity.class);
+
+            // Cờ FLAG_ACTIVITY_CLEAR_TOP sẽ xóa tất cả các Activity nằm trên BooksActivity
+            // và đưa BooksActivity lên đầu, giúp ngăn xếp Activity sạch sẽ hơn.
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+            startActivity(intent);
+            finish(); // Kết thúc AddExpenseActivity
+        });
 
         if (tabIncome != null) {
             tabIncome.setOnClickListener(v -> {
@@ -58,16 +66,12 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
         }
 
         // --- Logic ẩn/hiện bàn phím và bộ tính toán (ĐƠN GIẢN HÓA) ---
-
-        // 1. Khi focus vào inputNote
         inputNote.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
-                // Ẩn calculator
                 if (calculatorSection != null) {
                     calculatorSection.setVisibility(View.GONE);
                 }
             } else {
-                // Hiện lại calculator và ẩn bàn phím
                 hideKeyboard();
                 if (calculatorSection != null) {
                     calculatorSection.setVisibility(View.VISIBLE);
@@ -75,7 +79,6 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
             }
         });
 
-        // 2. Khi click vào tvAmount hoặc container của nó (Bắt đầu nhập số)
         tvAmount.setOnClickListener(v -> {
             inputNote.clearFocus();
             hideKeyboard();
@@ -88,7 +91,6 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
                 hideKeyboard();
             });
         }
-
         // --- End Logic ---
 
         // Các nút số
@@ -109,9 +111,6 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
         setDefaultCategory();
     }
 
-    /**
-     * ẨN bàn phím
-     */
     private void hideKeyboard() {
         View view = this.getCurrentFocus();
         if (view != null) {
@@ -122,9 +121,6 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    /**
-     * Tìm và đánh dấu category mặc định
-     */
     private void setDefaultCategory() {
         View rootView = findViewById(android.R.id.content);
         if (rootView != null) {
@@ -132,14 +128,12 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    /**
-     * Đệ quy tìm category "Hàng ngày"
-     */
     private void findAndSelectDefaultCategory(View view) {
         if (view instanceof LinearLayout) {
             Object tag = view.getTag();
             if (tag != null && tag.equals("Hàng ngày")) {
-                selectedCategoryView = view;
+                // Manually call onCategoryClick to set initial state
+                onCategoryClick(view);
                 return;
             }
         }
@@ -152,22 +146,17 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    /**
-     * Xử lý khi click vào category
-     */
     public void onCategoryClick(View view) {
         Object tag = view.getTag();
         if (tag == null) {
             return;
         }
 
-        // Ẩn bàn phím khi chọn danh mục
         inputNote.clearFocus();
         hideKeyboard();
 
         String categoryName = tag.toString();
 
-        // Bỏ highlight category cũ
         if (selectedCategoryView != null) {
             selectedCategoryView.setBackgroundResource(0);
 
@@ -183,7 +172,6 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
             }
         }
 
-        // Highlight category mới
         view.setBackgroundResource(R.drawable.category_selected);
         selectedCategoryView = view;
         selectedCategory = categoryName;
@@ -193,6 +181,7 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
             if (layout.getChildCount() >= 2) {
                 View child = layout.getChildAt(1);
                 if (child instanceof TextView) {
+                    // Màu hồng là 0xFFEC407A
                     ((TextView) child).setTextColor(0xFFEC407A);
                     ((TextView) child).setTypeface(null, android.graphics.Typeface.BOLD);
                 }
@@ -204,10 +193,10 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
 
     @Override
     public void onClick(View v) {
-        // Ẩn bàn phím chữ khi nhấn nút số
         inputNote.clearFocus();
         hideKeyboard();
-
+        
+        // --- Logic Calculator an toàn hơn ---
         if (v.getId() == R.id.btn_delete) {
             if (currentInput.length() > 0) {
                 currentInput.deleteCharAt(currentInput.length() - 1);
@@ -215,18 +204,30 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
         } else {
             if (v instanceof Button) {
                 String text = ((Button) v).getText().toString();
+
                 if (text.equals(".") && currentInput.toString().contains(".")) {
                     return;
                 }
-                currentInput.append(text);
+                
+                // Xử lý số 0 ở đầu
+                if (currentInput.length() == 0 && text.equals("0")) {
+                    currentInput.append(text);
+                } else if (currentInput.toString().equals("0") && !text.equals(".")) {
+                    currentInput.setLength(0);
+                    currentInput.append(text);
+                } else {
+                    currentInput.append(text);
+                }
             }
         }
 
-        if (currentInput.length() == 0) {
+        if (currentInput.length() == 0 || currentInput.toString().isEmpty()) {
             tvAmount.setText("0");
+            currentInput.setLength(0); // Đảm bảo currentInput rỗng
         } else {
             tvAmount.setText(currentInput.toString());
         }
+        // --- Kết thúc Logic Calculator ---
     }
 
     private void saveExpense() {
@@ -235,7 +236,8 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
         String amountStr = tvAmount.getText().toString();
         String note = inputNote.getText().toString().trim();
 
-        if (amountStr.equals("0") || amountStr.isEmpty()) {
+        // Validation an toàn hơn
+        if (amountStr.equals("0") || amountStr.isEmpty() || amountStr.equals(".")) {
             Toast.makeText(this, "Vui lòng nhập số tiền", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -243,25 +245,69 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
         double amount;
         try {
             amount = Double.parseDouble(amountStr);
+            if (amount <= 0) {
+                Toast.makeText(this, "Số tiền phải lớn hơn 0", Toast.LENGTH_SHORT).show();
+                return;
+            }
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Số tiền không hợp lệ", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        if (selectedCategoryView == null) {
+            Toast.makeText(this, "Vui lòng chọn danh mục", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         long timestamp = System.currentTimeMillis();
 
-        // --- LƯU MỚI VÀO JSON ---
-        Transaction newTransaction = new Transaction("expense", amount, selectedCategory, note, timestamp);
-        JsonHelper.addTransaction(this, newTransaction);
+        // Tạo Transaction và lưu vào pendingTransaction
+        pendingTransaction = new Transaction(
+                null, // ID sẽ được Firestore tạo
+                "EXPENSE",
+                amount,
+                selectedCategory,
+                note,
+                timestamp
+        );
 
-        // Chuẩn bị trả về cho BooksActivity
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("new_transaction", newTransaction);
-        setResult(RESULT_OK, resultIntent);
+        // Lưu vào Firebase
+        FirebaseManager.getInstance().saveTransaction(pendingTransaction, this);
+        onSuccess("Giao dịch đã được lưu");
+    }
 
-        Toast.makeText(this, "Đã lưu chi tiêu vào file JSON!", Toast.LENGTH_SHORT).show();
+    @Override
+    public void onSuccess(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 
+        if (pendingTransaction != null) {
+            // Chuyển hướng trực tiếp về BooksActivity
+            Intent intent = new Intent(this, BooksActivity.class);
+
+            // Truyền giao dịch mới
+            intent.putExtra("NEW_TRANSACTION", pendingTransaction);
+
+            // Xóa ngăn xếp trên BooksActivity
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+            startActivity(intent);
+        }
+
+        // Kết thúc AddExpenseActivity/AddIncomeActivity
         finish();
+    }
+
+
+    @Override
+    public void onFailure(Exception e) {
+        String errorMessage = "Lỗi khi lưu giao dịch";
+        if (e != null && e.getMessage() != null) {
+            errorMessage += ": " + e.getMessage();
+        }
+        Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+
+        // Reset transaction khi lưu thất bại
+        pendingTransaction = null;
     }
 
     @Override
@@ -271,13 +317,6 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
         // Nếu là giao dịch được thêm thành công từ màn hình Income, chuyển tiếp kết quả về BooksActivity
         if (requestCode == ADD_INCOME_REQUEST && resultCode == RESULT_OK) {
             setResult(RESULT_OK, data); // Chuyển tiếp kết quả về BooksActivity
-            finish(); // Finish AddExpenseActivity, passing the result up to BooksActivity
-            return; // Stop execution after relaying
-        }
-
-        // Nếu giao dịch chi tiêu được lưu thành công (setResult(OK) was called in saveExpense()), or if result relay above finished.
-        // We must only finish if the result is OK AND we are not the income relay case (handled above).
-        if (resultCode == RESULT_OK && requestCode != ADD_INCOME_REQUEST) {
             finish();
         }
     }
