@@ -273,7 +273,7 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
 
         // Lưu vào Firebase
         FirebaseManager.getInstance().saveTransaction(pendingTransaction, this);
-        onSuccess("Giao dịch đã được lưu");
+        onSuccess("Giao dịch của bạn đã được lưu");
     }
 
     @Override
