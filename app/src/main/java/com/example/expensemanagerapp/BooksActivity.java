@@ -1,5 +1,6 @@
 package com.example.expensemanagerapp;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface; // New: For AlertDialog buttons
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -50,26 +52,48 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
     private LinearLayout llTransactions;
     private TextView tvSeeAllTransactions;
 
-    // Các Views và State mới cho Thống kê theo tháng
+    // Các Views và State mới cho Thống kê
     private TextView tvSelectedMonthYear;
     private TextView tvTotalAmount;
     private TextView tvIncomeAmount;
     private TextView tvExpenseAmount;
     private LinearLayout monthYearPickerLayout;
     private ImageView ivToggleVisibility; 
+    private ImageView ivFilter; // New: Filter icon
 
-    private Calendar currentCalendar; // State for selected month/year
+    private Calendar currentCalendar; // State for selected month/year (for month picker functionality)
     
     // State for amount visibility and stored financial data
     private boolean isAmountVisible = true;
     private double currentTotalIncome = 0;
     private double currentTotalExpense = 0;
 
+    // New: State for general date range filter (millisecond timestamps)
+    private long currentFilterStartTime = 0; 
+    private long currentFilterEndTime = 0; 
+    private String currentFilterDisplayLabel = ""; 
+
     // Lưu trữ danh sách mục tiêu đã tải để truy cập nhanh khi người dùng click
     private Map<String, Goal> loadedGoalsMap = new HashMap<>();
 
     private Map<String, Boolean> expandedDates = new HashMap<>();
     private Map<String, LinearLayout> transactionContainers = new HashMap<>();
+
+    // Constants for filter types (used in showFilterDialog and calculateDateRange)
+    private static final int RANGE_ALL = 0;
+    private static final int RANGE_TODAY = 1;
+    private static final int RANGE_YESTERDAY = 2;
+    private static final int RANGE_THIS_WEEK = 3;
+    private static final int RANGE_LAST_WEEK = 4;
+    private static final int RANGE_THIS_MONTH = 5;
+    private static final int RANGE_LAST_MONTH = 6;
+    private static final int RANGE_THIS_YEAR = 7;
+    private static final int RANGE_LAST_YEAR = 8;
+    private static final int RANGE_LAST_7_DAYS = 9;
+    private static final int RANGE_LAST_30_DAYS = 10;
+    private static final int RANGE_LAST_90_DAYS = 11;
+    private static final int RANGE_CUSTOM = 12;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,9 +123,13 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         tvExpenseAmount = findViewById(R.id.tv_expense_amount);
         monthYearPickerLayout = findViewById(R.id.month_year_picker_layout);
         ivToggleVisibility = findViewById(R.id.iv_toggle_visibility); 
+        ivFilter = findViewById(R.id.iv_filter); // NEW: Filter icon
 
         // Khởi tạo State (mặc định là tháng hiện tại)
         currentCalendar = Calendar.getInstance();
+        
+        // NEW: Khởi tạo filter state cho tháng hiện tại (mặc định)
+        setFilterRange(getRangeForCurrentMonth(), false); // Don't call loadTransactionsData twice
         
         // Khởi tạo Bottom Navigation Views
         LinearLayout bottomNavigation = findViewById(R.id.bottom_navigation);
@@ -121,8 +149,9 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         if (bottomNavWallet != null) bottomNavWallet.setOnClickListener(this);
         if (bottomNavAnalysis != null) bottomNavAnalysis.setOnClickListener(this);
         if (bottomNavMe != null) bottomNavMe.setOnClickListener(this);
-        if (monthYearPickerLayout != null) monthYearPickerLayout.setOnClickListener(this); // Thêm listener cho Date Picker
-        if (ivToggleVisibility != null) ivToggleVisibility.setOnClickListener(this); // New listener for visibility toggle
+        if (monthYearPickerLayout != null) monthYearPickerLayout.setOnClickListener(this); 
+        if (ivToggleVisibility != null) ivToggleVisibility.setOnClickListener(this); 
+        if (ivFilter != null) ivFilter.setOnClickListener(this); // Set listener for filter
         if (tvSeeAllTransactions != null) {
             tvSeeAllTransactions.setOnClickListener(this);
             tvSeeAllTransactions.setText("Thu gọn");
@@ -130,7 +159,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
 
         // Tải dữ liệu ban đầu
         updateDateUI();
-        loadMonthlyData(); // Tải dữ liệu cho tháng hiện tại
+        loadTransactionsData(); // Use generic filter state
         loadSavingsGoals();
     }
 
@@ -143,16 +172,15 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
              finish();
              return;
         }
-        loadMonthlyData(); // Tải lại dữ liệu cho tháng đang chọn
+        loadTransactionsData(); // Tải lại dữ liệu cho phạm vi đang chọn
         loadSavingsGoals();
     }
 
     /**
-     * Cập nhật giao diện hiển thị tháng/năm đang chọn.
+     * Cập nhật giao diện hiển thị phạm vi lọc đang chọn.
      */
     private void updateDateUI() {
-        SimpleDateFormat monthYearFormat = new SimpleDateFormat("MM/yyyy", Locale.getDefault());
-        tvSelectedMonthYear.setText(monthYearFormat.format(currentCalendar.getTime()));
+        tvSelectedMonthYear.setText(currentFilterDisplayLabel);
     }
 
     /**
@@ -211,13 +239,13 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
                     int selectedMonth = monthPicker.getValue(); // 0-indexed month
                     int selectedYear = yearPicker.getValue();
 
-                    // Cập nhật state
+                    // Cập nhật state của currentCalendar
                     currentCalendar.set(Calendar.YEAR, selectedYear);
                     currentCalendar.set(Calendar.MONTH, selectedMonth);
                     currentCalendar.set(Calendar.DAY_OF_MONTH, 1); // Giữ ngày cố định
 
-                    updateDateUI();
-                    loadMonthlyData(); // Tải lại dữ liệu
+                    // Cập nhật filter range và tải lại dữ liệu
+                    setFilterRange(getRangeForCurrentMonth(), true); 
                 }
             })
             .setNegativeButton("Hủy", null)
@@ -226,9 +254,9 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
 
 
     /**
-     * Tải dữ liệu giao dịch từ Firebase Firestore cho tháng/năm đang chọn.
+     * Tải dữ liệu giao dịch từ Firebase Firestore cho phạm vi ngày đang chọn.
      */
-    private void loadMonthlyData() {
+    private void loadTransactionsData() {
         FirebaseManager manager = FirebaseManager.getInstance();
         if (manager == null) return; 
         
@@ -240,30 +268,22 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
             return;
         }
 
-        // 1. Tính toán mốc thời gian (timestamp) đầu và cuối tháng
-        Calendar startCal = (Calendar) currentCalendar.clone();
-        startCal.set(Calendar.DAY_OF_MONTH, 1);
-        startCal.set(Calendar.HOUR_OF_DAY, 0);
-        startCal.set(Calendar.MINUTE, 0);
-        startCal.set(Calendar.SECOND, 0);
-        startCal.set(Calendar.MILLISECOND, 0);
-        long startTime = startCal.getTimeInMillis();
+        long startTime = currentFilterStartTime;
+        long endTime = currentFilterEndTime;
+        
+        Query query = transactionsRef.orderBy("timestamp", Query.Direction.DESCENDING);
 
-        Calendar endCal = (Calendar) currentCalendar.clone();
-        endCal.set(Calendar.DAY_OF_MONTH, endCal.getActualMaximum(Calendar.DAY_OF_MONTH));
-        endCal.set(Calendar.HOUR_OF_DAY, 23);
-        endCal.set(Calendar.MINUTE, 59);
-        endCal.set(Calendar.SECOND, 59);
-        endCal.set(Calendar.MILLISECOND, 999);
-        long endTime = endCal.getTimeInMillis();
-
+        if (startTime > 0) {
+            query = query.whereGreaterThanOrEqualTo("timestamp", startTime);
+        }
+        
+        // endTime luôn phải được sử dụng
+        if (endTime > 0) {
+            query = query.whereLessThanOrEqualTo("timestamp", endTime);
+        }
+        
         // 2. Query Firebase Firestore
-        transactionsRef
-                // Lọc theo khoảng thời gian
-                .whereGreaterThanOrEqualTo("timestamp", startTime)
-                .whereLessThanOrEqualTo("timestamp", endTime)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .get()
+        query.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Transaction> monthlyTransactions = new ArrayList<>();
                     double totalIncome = 0;
@@ -275,7 +295,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
                             transaction.setId(document.getId());
                             monthlyTransactions.add(transaction);
                             
-                            // Tính tổng cho tháng đang chọn
+                            // Tính tổng cho phạm vi đang chọn
                             if (transaction.getType().equalsIgnoreCase("income")) {
                                 totalIncome += transaction.getAmount();
                             } else {
@@ -291,14 +311,14 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
                     currentTotalIncome = totalIncome;
                     currentTotalExpense = totalExpense;
 
-                    // Cập nhật tổng quan tài chính cho tháng
+                    // Cập nhật tổng quan tài chính
                     updateFinancialOverview(currentTotalIncome, currentTotalExpense);
 
-                    // Hiển thị danh sách giao dịch (chỉ hiển thị các giao dịch đã lọc)
+                    // Hiển thị danh sách giao dịch 
                     processAndDisplayTransactions(monthlyTransactions);
 
                     if (monthlyTransactions.isEmpty()) {
-                         // Toast.makeText(this, "Chưa có giao dịch nào trong tháng này.", Toast.LENGTH_SHORT).show();
+                         // Toast.makeText(this, "Chưa có giao dịch nào trong phạm vi này.", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -457,8 +477,6 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         expandedDates.put(dateString, expandInitially);
 
         // 2. Create the header view using code
-        // Do không có layout transaction_item trong context, ta sẽ tạo View bằng code để đảm bảo
-        // tính tương thích với cấu trúc hiển thị giao dịch đã có trong layout books.xml
 
         LinearLayout headerView = new LinearLayout(this);
         headerView.setLayoutParams(new LinearLayout.LayoutParams(
@@ -467,7 +485,6 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         headerView.setOrientation(LinearLayout.HORIZONTAL);
         headerView.setGravity(android.view.Gravity.CENTER_VERTICAL);
         headerView.setPadding(12, 12, 12, 12);
-        // Đã sửa lỗi: Thay thế R.drawable.ripple_effect bằng màu trắng, dựa vào onClickListener để có hiệu ứng chạm
         headerView.setBackgroundColor(Color.WHITE); 
         headerView.setTag("HEADER_" + dateString); // Tag for easy retrieval
 
@@ -563,7 +580,6 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         itemLayout.setOrientation(LinearLayout.HORIZONTAL);
         itemLayout.setPadding(12, 12, 12, 12);
         itemLayout.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        // Đã sửa lỗi: Thay thế R.drawable.ripple_effect bằng màu trắng
         itemLayout.setBackgroundColor(Color.WHITE); 
 
         // Icon
@@ -724,8 +740,10 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
             onSeeAllTransactionsClicked();
         } else if (id == R.id.month_year_picker_layout) {
             showMonthYearPicker();
-        } else if (id == R.id.iv_toggle_visibility) { // New click handler
+        } else if (id == R.id.iv_toggle_visibility) { 
             toggleAmountVisibility();
+        } else if (id == R.id.iv_filter) { // NEW: Filter click handler
+            showFilterDialog();
         }
     }
 
@@ -735,7 +753,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
 
         if (resultCode == RESULT_OK) {
             if (requestCode == ADD_TRANSACTION_REQUEST) {
-                loadMonthlyData(); // Tải lại dữ liệu tháng sau khi thêm giao dịch mới
+                loadTransactionsData(); // Tải lại dữ liệu sau khi thêm giao dịch mới
             } else if (requestCode == EDIT_GOAL_REQUEST) {
                 loadSavingsGoals(); // Tải lại danh sách mục tiêu sau khi chỉnh sửa/xóa
             }
@@ -864,5 +882,253 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         });
 
         return layout;
+    }
+
+
+    // =================================================================
+    // NEW FILTERING LOGIC
+    // =================================================================
+
+    /**
+     * Helper class to hold calculated date range and its display label.
+     */
+    private static class DateRange {
+        long startTime;
+        long endTime;
+        String label;
+
+        DateRange(long startTime, long endTime, String label) {
+            this.startTime = startTime;
+            this.endTime = endTime;
+            this.label = label;
+        }
+    }
+
+    /**
+     * Updates the state filter and optionally reloads data.
+     */
+    private void setFilterRange(DateRange range, boolean reloadData) {
+        this.currentFilterStartTime = range.startTime;
+        this.currentFilterEndTime = range.endTime;
+        this.currentFilterDisplayLabel = range.label;
+        
+        updateDateUI();
+        if (reloadData) {
+            loadTransactionsData(); 
+        }
+    }
+    
+    /**
+     * Lấy phạm vi mặc định (Tháng hiện tại), dùng cho MonthPicker.
+     */
+    private DateRange getRangeForCurrentMonth() {
+        // Sử dụng currentCalendar để tính toán phạm vi tháng hiện tại
+        Calendar startCal = (Calendar) currentCalendar.clone();
+        startCal.set(Calendar.DAY_OF_MONTH, 1);
+        startCal.set(Calendar.HOUR_OF_DAY, 0);
+        startCal.set(Calendar.MINUTE, 0);
+        startCal.set(Calendar.SECOND, 0);
+        startCal.set(Calendar.MILLISECOND, 0);
+        long startTime = startCal.getTimeInMillis();
+
+        Calendar endCal = (Calendar) currentCalendar.clone();
+        endCal.set(Calendar.DAY_OF_MONTH, endCal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        endCal.set(Calendar.HOUR_OF_DAY, 23);
+        endCal.set(Calendar.MINUTE, 59);
+        endCal.set(Calendar.SECOND, 59);
+        endCal.set(Calendar.MILLISECOND, 999);
+        long endTime = endCal.getTimeInMillis();
+        
+        SimpleDateFormat monthYearFormat = new SimpleDateFormat("MM/yyyy", Locale.getDefault());
+        String label = monthYearFormat.format(currentCalendar.getTime());
+        
+        return new DateRange(startTime, endTime, label);
+    }
+    
+    /**
+     * Hiển thị Custom Dialog để chọn các phạm vi lọc có sẵn.
+     */
+    private void showFilterDialog() {
+        final String[] items = {
+            "Tất cả", "Hôm nay", "Hôm qua", 
+            "Tuần này", "Tuần trước", 
+            "Tháng này", "Tháng trước", 
+            "Năm nay", "Năm ngoái", 
+            "Trong 7 ngày qua", "Trong 30 ngày qua", "Trong 90 ngày qua", 
+            "Phạm vi ngày tùy chỉnh"
+        };
+        
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Chọn Phạm vi Lọc");
+        builder.setItems(items, (dialog, which) -> {
+            if (which == RANGE_CUSTOM) {
+                showCustomDateRangePicker();
+            } else {
+                // Reset month picker calendar to current date for consistency 
+                // when moving to non-month filters (like 'Today', 'Last 7 days')
+                if (which != RANGE_THIS_MONTH && which != RANGE_LAST_MONTH) {
+                    currentCalendar = Calendar.getInstance(); 
+                }
+                setFilterRange(calculateDateRange(which, null, null), true);
+            }
+        });
+        builder.show();
+    }
+    
+    /**
+     * Mở DatePickerDialog để chọn phạm vi ngày tùy chỉnh.
+     */
+    private void showCustomDateRangePicker() {
+        // Mặc định ngày bắt đầu/kết thúc là ngày hiện tại
+        final Calendar startCalendar = Calendar.getInstance();
+        final Calendar endCalendar = Calendar.getInstance();
+
+        // 1. Chọn ngày bắt đầu
+        DatePickerDialog startDatePicker = new DatePickerDialog(
+            this, 
+            (view, year, monthOfYear, dayOfMonth) -> {
+                startCalendar.set(year, monthOfYear, dayOfMonth);
+                
+                // 2. Chọn ngày kết thúc ngay sau đó
+                DatePickerDialog endDatePicker = new DatePickerDialog(
+                    this, 
+                    (view1, year1, monthOfYear1, dayOfMonth1) -> {
+                        endCalendar.set(year1, monthOfYear1, dayOfMonth1);
+
+                        if (startCalendar.getTimeInMillis() <= endCalendar.getTimeInMillis()) {
+                            // Cập nhật filter range và tải dữ liệu
+                            setFilterRange(calculateDateRange(RANGE_CUSTOM, startCalendar, endCalendar), true);
+                        } else {
+                            Toast.makeText(this, "Ngày bắt đầu phải trước ngày kết thúc.", Toast.LENGTH_LONG).show();
+                        }
+                    }, 
+                    endCalendar.get(Calendar.YEAR), 
+                    endCalendar.get(Calendar.MONTH), 
+                    endCalendar.get(Calendar.DAY_OF_MONTH)
+                );
+                endDatePicker.setTitle("Chọn Ngày Kết thúc");
+                endDatePicker.show();
+            },
+            startCalendar.get(Calendar.YEAR),
+            startCalendar.get(Calendar.MONTH),
+            startCalendar.get(Calendar.DAY_OF_MONTH)
+        );
+        startDatePicker.setTitle("Chọn Ngày Bắt đầu");
+        startDatePicker.show();
+    }
+
+
+    /**
+     * Tính toán mốc thời gian (startTime và endTime) cho từng loại filter.
+     */
+    private DateRange calculateDateRange(int rangeType, Calendar customStart, Calendar customEnd) {
+        Calendar startCal = Calendar.getInstance();
+        Calendar endCal = Calendar.getInstance();
+        String label = "Phạm vi tùy chỉnh";
+
+        // Initialize endCal to end of today
+        endCal.set(Calendar.HOUR_OF_DAY, 23);
+        endCal.set(Calendar.MINUTE, 59);
+        endCal.set(Calendar.SECOND, 59);
+        endCal.set(Calendar.MILLISECOND, 999);
+        
+        // Initialize startCal to start of today
+        startCal.set(Calendar.HOUR_OF_DAY, 0);
+        startCal.set(Calendar.MINUTE, 0);
+        startCal.set(Calendar.SECOND, 0);
+        startCal.set(Calendar.MILLISECOND, 0);
+
+        switch (rangeType) {
+            case RANGE_ALL:
+                // Start from the beginning of time (0), end at current time
+                return new DateRange(0, endCal.getTimeInMillis(), "Tất cả");
+            case RANGE_TODAY:
+                label = "Hôm nay";
+                // startCal and endCal are already set to today
+                break;
+            case RANGE_YESTERDAY:
+                startCal.add(Calendar.DAY_OF_YEAR, -1);
+                endCal.add(Calendar.DAY_OF_YEAR, -1);
+                label = "Hôm qua";
+                break;
+            case RANGE_THIS_WEEK:
+                startCal.set(Calendar.DAY_OF_WEEK, startCal.getFirstDayOfWeek());
+                label = "Tuần này";
+                break;
+            case RANGE_LAST_WEEK:
+                startCal.add(Calendar.WEEK_OF_YEAR, -1);
+                startCal.set(Calendar.DAY_OF_WEEK, startCal.getFirstDayOfWeek());
+                
+                endCal = (Calendar) startCal.clone();
+                endCal.add(Calendar.DAY_OF_YEAR, 6); 
+                endCal.set(Calendar.HOUR_OF_DAY, 23); endCal.set(Calendar.MINUTE, 59); endCal.set(Calendar.SECOND, 59); endCal.set(Calendar.MILLISECOND, 999);
+                
+                label = "Tuần trước";
+                break;
+            case RANGE_THIS_MONTH:
+                startCal.set(Calendar.DAY_OF_MONTH, 1);
+                endCal.set(Calendar.DAY_OF_MONTH, endCal.getActualMaximum(Calendar.DAY_OF_MONTH));
+                label = "Tháng này";
+                break;
+            case RANGE_LAST_MONTH:
+                startCal.add(Calendar.MONTH, -1);
+                startCal.set(Calendar.DAY_OF_MONTH, 1);
+                
+                endCal = (Calendar) startCal.clone();
+                endCal.set(Calendar.DAY_OF_MONTH, endCal.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endCal.set(Calendar.HOUR_OF_DAY, 23); endCal.set(Calendar.MINUTE, 59); endCal.set(Calendar.SECOND, 59); endCal.set(Calendar.MILLISECOND, 999);
+                
+                label = "Tháng trước";
+                break;
+            case RANGE_THIS_YEAR:
+                startCal.set(Calendar.DAY_OF_YEAR, 1);
+                endCal = Calendar.getInstance(); // End is now
+                endCal.set(Calendar.HOUR_OF_DAY, 23); endCal.set(Calendar.MINUTE, 59); endCal.set(Calendar.SECOND, 59); endCal.set(Calendar.MILLISECOND, 999);
+                label = "Năm nay";
+                break;
+            case RANGE_LAST_YEAR:
+                startCal.add(Calendar.YEAR, -1);
+                startCal.set(Calendar.DAY_OF_YEAR, 1);
+                
+                endCal = (Calendar) startCal.clone();
+                endCal.set(Calendar.DAY_OF_YEAR, endCal.getActualMaximum(Calendar.DAY_OF_YEAR));
+                endCal.set(Calendar.HOUR_OF_DAY, 23); endCal.set(Calendar.MINUTE, 59); endCal.set(Calendar.SECOND, 59); endCal.set(Calendar.MILLISECOND, 999);
+                
+                label = "Năm ngoái";
+                break;
+            case RANGE_LAST_7_DAYS:
+                startCal.add(Calendar.DAY_OF_YEAR, -6); // 7 days including today
+                label = "Trong 7 ngày qua";
+                break;
+            case RANGE_LAST_30_DAYS:
+                startCal.add(Calendar.DAY_OF_YEAR, -29); // 30 days including today
+                label = "Trong 30 ngày qua";
+                break;
+            case RANGE_LAST_90_DAYS:
+                startCal.add(Calendar.DAY_OF_YEAR, -89); // 90 days including today
+                label = "Trong 90 ngày qua";
+                break;
+            case RANGE_CUSTOM:
+                if (customStart == null || customEnd == null) return getRangeForCurrentMonth(); // Fallback
+                
+                // Use the custom Calendars provided by the picker
+                startCal = customStart;
+                endCal = customEnd;
+                
+                // Ensure custom start time is start of day and end time is end of day
+                startCal.set(Calendar.HOUR_OF_DAY, 0); startCal.set(Calendar.MINUTE, 0); startCal.set(Calendar.SECOND, 0); startCal.set(Calendar.MILLISECOND, 0);
+                endCal.set(Calendar.HOUR_OF_DAY, 23); endCal.set(Calendar.MINUTE, 59); endCal.set(Calendar.SECOND, 59); endCal.set(Calendar.MILLISECOND, 999);
+
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                label = String.format("Phạm vi: %s - %s", 
+                                        dateFormat.format(startCal.getTime()), 
+                                        dateFormat.format(endCal.getTime()));
+                break;
+            default:
+                // Fallback to today
+                return calculateDateRange(RANGE_TODAY, null, null);
+        }
+
+        return new DateRange(startCal.getTimeInMillis(), endCal.getTimeInMillis(), label);
     }
 }

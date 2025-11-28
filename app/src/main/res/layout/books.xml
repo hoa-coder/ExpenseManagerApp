@@ -51,13 +51,6 @@
                     android:layout_marginStart="8dp"
                     android:contentDescription="Add icon" />
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_month"
-                    app:tint="@android:color/white"
-                    android:layout_marginStart="8dp"
-                    android:contentDescription="Month icon" />
             </LinearLayout>
 
             <!-- Quick Menu -->
@@ -180,6 +173,7 @@
                                 android:layout_marginStart="8dp"
                                 android:layout_marginEnd="8dp"
                                 app:drawableEndCompat="@android:drawable/arrow_down_float" />
+
                         </LinearLayout>
 
                         <!-- Icon ẩn/hiện số tiền -->
@@ -194,6 +188,16 @@
                             android:clickable="true"
                             android:focusable="true"
                             app:tint="#616161" />
+
+                        <ImageView
+                            android:id="@+id/iv_filter"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="8dp"
+                            android:clickable="true"
+                            android:contentDescription="Filter icon"
+                            android:focusable="true"
+                            android:src="@android:drawable/ic_menu_sort_by_size" />
                     </LinearLayout>
 
                     <!-- Financial figures -->
