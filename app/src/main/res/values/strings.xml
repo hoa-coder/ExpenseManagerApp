@@ -100,4 +100,9 @@
     <string name="category_icon_refund">Biểu tượng thẻ tín dụng (Hoàn tiền)</string>
     <string name="category_icon_interest">Biểu tượng ngân hàng (Lãi suất)</string>
     <string name="category_icon_business">Biểu tượng cặp tài liệu (Kinh doanh)</string>
+
+    <!-- Strings for Splash Screen -->
+    <string name="splash_screen_title">Expense Manager</string>
+    <string name="content_description_app_logo">Logo ứng dụng</string>
+    <string name="content_description_loading_bar">Đang tải dữ liệu ứng dụng</string>
 </resources>

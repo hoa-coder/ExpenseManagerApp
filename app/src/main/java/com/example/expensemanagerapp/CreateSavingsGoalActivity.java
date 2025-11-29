@@ -1,6 +1,7 @@
 package com.example.expensemanagerapp;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -245,7 +246,14 @@ public class CreateSavingsGoalActivity extends AppCompatActivity implements Fire
 
     @Override
     public void onSuccess(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        // Thay đổi thông báo Toast để rõ ràng hơn
+        String toastMessage = "Thêm mục tiêu thành công.";
+        Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
+
+        // Chuyển về màn hình chính (MainActivity) và xóa hết các activity trên stack
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         finish();
     }
 

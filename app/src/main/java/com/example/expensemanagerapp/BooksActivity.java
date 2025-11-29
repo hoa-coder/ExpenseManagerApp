@@ -755,7 +755,10 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
             if (requestCode == ADD_TRANSACTION_REQUEST) {
                 loadTransactionsData(); // Tải lại dữ liệu sau khi thêm giao dịch mới
             } else if (requestCode == EDIT_GOAL_REQUEST) {
-                loadSavingsGoals(); // Tải lại danh sách mục tiêu sau khi chỉnh sửa/xóa
+                // Sửa lỗi: đảm bảo làm mới danh sách mục tiêu sau khi xóa/chỉnh sửa
+                loadSavingsGoals(); 
+                // Cần tải lại giao dịch vì hành động FUND/SAVE có thể ảnh hưởng đến tổng quan
+                loadTransactionsData();
             }
         }
     }
@@ -804,11 +807,15 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
      */
     private void displayGoals(List<Goal> goals) {
         if (llGoalsGrid == null) return;
-        // Xóa tất cả các view cũ (trừ nút Add, giả định nút Add là cuối cùng)
-        int childCount = llGoalsGrid.getChildCount();
-        if (childCount > 1) {
-            llGoalsGrid.removeViews(0, childCount - 1);
-        }
+        
+        // Lưu lại nút "Thêm"
+        View addGoalButton = llAddGoal;
+        
+        // Xóa TẤT CẢ các view con, sau đó thêm lại nút "Thêm"
+        llGoalsGrid.removeAllViews();
+        
+        // Thêm lại nút "Thêm" vào đầu tiên để nó luôn xuất hiện bên trái
+        llGoalsGrid.addView(addGoalButton);
 
         for (Goal goal : goals) {
             double target = goal.getTargetAmount();
@@ -818,9 +825,8 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
             // Tạo view cho mỗi mục tiêu
             LinearLayout goalItem = createGoalItemView(goal.getName(), goal.getIcon(), percentage, goal.getId());
 
-            // Thêm vào grid (trước nút Add)
-            int addButtonIndex = llGoalsGrid.getChildCount() - 1;
-            llGoalsGrid.addView(goalItem, addButtonIndex);
+            // Thêm vào grid (SAU nút Add)
+            llGoalsGrid.addView(goalItem);
         }
     }
 

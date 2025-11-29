@@ -20,12 +20,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Activity để xem chi tiết, chỉnh sửa, xóa và thêm/rút tiền mục tiêu tiết kiệm.
  */
-public class GoalDetailActivity extends AppCompatActivity implements FirebaseManager.OnCompleteListener {
+public class GoalDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_GOAL = "extra_goal";
     public static final int REQUEST_CODE_EDIT_GOAL = 101;
@@ -33,7 +32,7 @@ public class GoalDetailActivity extends AppCompatActivity implements FirebaseMan
 
     private Goal currentGoal;
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-    
+
     // Views for Display Card
     private TextView tvIconEmoji;
     private TextView tvGoalNameDisplay;
@@ -48,7 +47,7 @@ public class GoalDetailActivity extends AppCompatActivity implements FirebaseMan
     private TextView tvStartDate;
     private TextView tvEndDate;
     private EditText etNote;
-    
+
     // Action Buttons
     private ImageView btnClose;
     private ImageView btnSave;
@@ -94,7 +93,7 @@ public class GoalDetailActivity extends AppCompatActivity implements FirebaseMan
         tvStartDate = findViewById(R.id.tv_start_date);
         tvEndDate = findViewById(R.id.tv_end_date);
         etNote = findViewById(R.id.et_note);
-        
+
         // Action Buttons
         btnClose = findViewById(R.id.btn_close);
         btnSave = findViewById(R.id.btn_save);
@@ -108,7 +107,7 @@ public class GoalDetailActivity extends AppCompatActivity implements FirebaseMan
      */
     private void loadGoalData() {
         if (currentGoal == null) return;
-        
+
         // Cập nhật thẻ hiển thị
         tvIconEmoji.setText(currentGoal.getIcon());
         tvGoalNameDisplay.setText(currentGoal.getName());
@@ -119,11 +118,11 @@ public class GoalDetailActivity extends AppCompatActivity implements FirebaseMan
         etTargetAmount.setText(String.valueOf(currentGoal.getTargetAmount()));
         etCurrentAmount.setText(String.valueOf(currentGoal.getCurrentAmount()));
         etNote.setText(currentGoal.getNote());
-        
+
         // Thiết lập ngày tháng
         tvStartDate.setText("Ngày bắt đầu: " + currentGoal.getStartDate());
         tvEndDate.setText("Ngày kết thúc: " + currentGoal.getEndDate());
-        
+
         // Khởi tạo Calendar từ chuỗi ngày tháng (dùng cho DatePicker)
         try {
             startDateCalendar.setTime(dateFormatter.parse(currentGoal.getStartDate()));
@@ -132,7 +131,7 @@ public class GoalDetailActivity extends AppCompatActivity implements FirebaseMan
             Log.e(TAG, "Lỗi parse ngày tháng: " + e.getMessage());
         }
     }
-    
+
     /**
      * Cập nhật hiển thị tiến độ (Thẻ Progress Card)
      */
@@ -140,9 +139,9 @@ public class GoalDetailActivity extends AppCompatActivity implements FirebaseMan
         String currentStr = currencyFormatter.format(current);
         String targetStr = currencyFormatter.format(target);
         tvCurrentTarget.setText(String.format("%s / %s", currentStr, targetStr));
-        
+
         int percentage = (int) ((target == 0) ? 0 : (current / target) * 100);
-        
+
         progressBar.setProgress(percentage);
         tvPercentage.setText(String.format("%d%% hoàn thành", percentage));
     }
@@ -152,16 +151,16 @@ public class GoalDetailActivity extends AppCompatActivity implements FirebaseMan
         btnClose.setOnClickListener(v -> finish());
         btnSave.setOnClickListener(v -> saveGoalChanges());
         btnDeleteGoal.setOnClickListener(v -> deleteGoalConfirmation());
-        
+
         // Lắng nghe sự kiện click cho trường ngày tháng (cho phép chọn lại)
         tvStartDate.setOnClickListener(v -> showDatePicker(tvStartDate, startDateCalendar));
         tvEndDate.setOnClickListener(v -> showDatePicker(tvEndDate, endDateCalendar));
-        
+
         // Xử lý Thêm tiền/Rút tiền
         btnAddFund.setOnClickListener(v -> showFundDialog(true));
         btnWithdraw.setOnClickListener(v -> showFundDialog(false));
     }
-    
+
     /**
      * Hiển thị DatePicker cho việc chọn ngày.
      */
@@ -183,13 +182,13 @@ public class GoalDetailActivity extends AppCompatActivity implements FirebaseMan
         );
         datePickerDialog.show();
     }
-    
+
     /**
      * Hiển thị dialog để thêm hoặc rút tiền.
      */
     private void showFundDialog(boolean isAdding) {
         String title = isAdding ? "Thêm tiền vào mục tiêu" : "Rút tiền khỏi mục tiêu";
-        
+
         final EditText input = new EditText(this);
         input.setHint("Nhập số tiền");
         input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
@@ -215,31 +214,47 @@ public class GoalDetailActivity extends AppCompatActivity implements FirebaseMan
                 .setNegativeButton("Hủy", null)
                 .show();
     }
-    
+
     /**
      * Cập nhật số tiền hiện tại của mục tiêu và lưu vào Firebase.
      */
     private void updateGoalFund(boolean isAdding, double amount) {
         double newCurrentAmount = currentGoal.getCurrentAmount();
-        
+
         if (isAdding) {
             newCurrentAmount += amount;
         } else {
             if (currentGoal.getCurrentAmount() < amount) {
-                Toast.makeText(this, "Số tiền rút lớn hơn số tiền hiện có.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "❌ Số tiền rút lớn hơn số tiền hiện có.", Toast.LENGTH_SHORT).show();
                 return;
             }
             newCurrentAmount -= amount;
         }
-        
+
         currentGoal.setCurrentAmount(newCurrentAmount);
-        
+
         // Cập nhật UI ngay lập tức
         etCurrentAmount.setText(String.valueOf(newCurrentAmount));
         updateProgressDisplay(newCurrentAmount, currentGoal.getTargetAmount());
 
-        // Lưu mục tiêu đã cập nhật
-        FirebaseManager.getInstance().updateGoal(currentGoal, new GoalUpdateListener("fund"));
+        // Hiển thị Toast đang cập nhật
+        Toast.makeText(this, "Đang cập nhật...", Toast.LENGTH_SHORT).show();
+
+        // Lưu mục tiêu đã cập nhật - CHỜ onSuccess rồi mới finish
+        FirebaseManager.getInstance().updateGoal(currentGoal, new FirebaseManager.OnCompleteListener() {
+            @Override
+            public void onSuccess(String message) {
+                Toast.makeText(GoalDetailActivity.this, "✅ Cập nhật số tiền thành công!", Toast.LENGTH_SHORT).show();
+                // Đặt kết quả và quay lại
+                setResult(RESULT_OK);
+                finish();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(GoalDetailActivity.this, "❌ Cập nhật thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     /**
@@ -249,95 +264,97 @@ public class GoalDetailActivity extends AppCompatActivity implements FirebaseMan
         String name = etGoalName.getText().toString().trim();
         String targetStr = etTargetAmount.getText().toString().trim();
         String note = etNote.getText().toString().trim();
-        
+
         if (name.isEmpty() || targetStr.isEmpty()) {
-            Toast.makeText(this, "Vui lòng điền đủ Tên và Số tiền Mục tiêu.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "❌ Vui lòng điền đủ Tên và Số tiền Mục tiêu.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         try {
             double targetAmount = Double.parseDouble(targetStr);
             double currentAmount = Double.parseDouble(etCurrentAmount.getText().toString());
-            
+
             if (targetAmount <= 0) {
-                 Toast.makeText(this, "Số tiền mục tiêu phải lớn hơn 0.", Toast.LENGTH_SHORT).show();
-                 return;
+                Toast.makeText(this, "❌ Số tiền mục tiêu phải lớn hơn 0.", Toast.LENGTH_SHORT).show();
+                return;
             }
             if (currentAmount > targetAmount) {
-                 Toast.makeText(this, "Số tiền hiện tại không thể lớn hơn mục tiêu.", Toast.LENGTH_SHORT).show();
-                 return;
+                Toast.makeText(this, "❌ Số tiền hiện tại không thể lớn hơn mục tiêu.", Toast.LENGTH_SHORT).show();
+                return;
             }
             if (endDateCalendar.before(startDateCalendar)) {
-                Toast.makeText(this, "Ngày kết thúc phải sau ngày bắt đầu.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "❌ Ngày kết thúc phải sau ngày bắt đầu.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             // Cập nhật đối tượng hiện tại
             currentGoal.setName(name);
             currentGoal.setTargetAmount(targetAmount);
-            currentGoal.setCurrentAmount(currentAmount); // Trường hợp người dùng sửa tay
+            currentGoal.setCurrentAmount(currentAmount);
             currentGoal.setNote(note);
             currentGoal.setStartDate(dateFormatter.format(startDateCalendar.getTime()));
             currentGoal.setEndDate(dateFormatter.format(endDateCalendar.getTime()));
-            
+
             // Cập nhật UI hiển thị
             tvGoalNameDisplay.setText(name);
             updateProgressDisplay(currentGoal.getCurrentAmount(), targetAmount);
-            
-            // Lưu vào Firebase
-            FirebaseManager.getInstance().updateGoal(currentGoal, new GoalUpdateListener("save"));
+
+            // Hiển thị Toast đang lưu
+            Toast.makeText(this, "Đang lưu thay đổi...", Toast.LENGTH_SHORT).show();
+
+            // Lưu vào Firebase - CHỜ onSuccess rồi mới finish
+            FirebaseManager.getInstance().updateGoal(currentGoal, new FirebaseManager.OnCompleteListener() {
+                @Override
+                public void onSuccess(String message) {
+                    Toast.makeText(GoalDetailActivity.this, "✅ Lưu mục tiêu thành công!", Toast.LENGTH_SHORT).show();
+                    // Đặt kết quả và quay lại
+                    setResult(RESULT_OK);
+                    finish();
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(GoalDetailActivity.this, "❌ Lưu thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
 
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Số tiền không hợp lệ.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "❌ Số tiền không hợp lệ.", Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     /**
      * Hiển thị xác nhận xóa mục tiêu.
+     * QUAN TRỌNG: Chỉ gọi finish() trong onSuccess, KHÔNG gọi finish() ở đây
      */
     private void deleteGoalConfirmation() {
         new AlertDialog.Builder(this)
                 .setTitle("Xóa Mục tiêu")
                 .setMessage("Bạn có chắc chắn muốn xóa mục tiêu \"" + currentGoal.getName() + "\"?")
                 .setPositiveButton("Xóa", (dialog, which) -> {
-                    FirebaseManager.getInstance().deleteGoal(currentGoal.getId(), new GoalUpdateListener("delete"));
+                    // Hiển thị Toast đang xóa
+                    Toast.makeText(GoalDetailActivity.this, "Đang xóa mục tiêu...", Toast.LENGTH_SHORT).show();
+
+                    // Xóa mục tiêu và CHỜ callback
+                    FirebaseManager.getInstance().deleteGoal(currentGoal.getId(), new FirebaseManager.OnCompleteListener() {
+                        @Override
+                        public void onSuccess(String message) {
+                            // ✅ CHỈ GỌI finish() KHI XÓA THÀNH CÔNG
+                            Toast.makeText(GoalDetailActivity.this, "✅ Xóa mục tiêu thành công!", Toast.LENGTH_SHORT).show();
+                            setResult(RESULT_OK);
+                            finish(); // ← Đóng activity sau khi xóa thành công
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            // ❌ KHÔNG finish() khi xóa thất bại
+                            Toast.makeText(GoalDetailActivity.this, "❌ Xóa thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    finish();
+                    // Dù đúng hay sai vẫn quay finish
                 })
                 .setNegativeButton("Hủy", null)
                 .show();
     }
-
-
-    /**
-     * Lớp Listener nội bộ để xử lý kết quả Firebase.
-     */
-    private class GoalUpdateListener implements FirebaseManager.OnCompleteListener {
-        private final String action;
-
-        public GoalUpdateListener(String action) {
-            this.action = action;
-        }
-
-        @Override
-        public void onSuccess(String message) {
-            Toast.makeText(GoalDetailActivity.this, message, Toast.LENGTH_SHORT).show();
-            
-            if (action.equals("delete") || action.equals("save") || action.equals("fund")) {
-                // Đặt kết quả cho BooksActivity và thoát
-                setResult(RESULT_OK); 
-                finish();
-            }
-        }
-
-        @Override
-        public void onFailure(Exception e) {
-            Toast.makeText(GoalDetailActivity.this, "Thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-    
-    // Unused method from interface (implemented by internal class GoalUpdateListener)
-    @Override
-    public void onSuccess(String message) {}
-
-    @Override
-    public void onFailure(Exception e) {}
 }

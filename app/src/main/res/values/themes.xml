@@ -6,4 +6,15 @@
     </style>
 
     <style name="Theme.ExpenseManagerApp" parent="Base.Theme.ExpenseManagerApp" />
+
+    <!-- Style cho Splash Screen -->
+    <style name="Theme.ExpenseManagerApp.Splash" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Đặt màu nền bằng gradient drawable -->
+        <item name="android:windowBackground">@drawable/splash_gradient</item>
+        <!-- Ẩn thanh trạng thái (tùy chọn) -->
+        <item name="android:windowFullscreen">true</item>
+        <!-- Đảm bảo không có action bar/toolbar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 </resources>
