@@ -66,10 +66,10 @@ public class CreateAccountActivity extends AppCompatActivity {
 
         // --- PHẦN GIỮ CHỖ CHO LOGIC LƯU VÀO DATABASE ---
         // Ví dụ:
-        // Account newAccount = new Account(accountName, accountType, initialBalance, note);
-        // dbHelper.addAccount(newAccount);
+        // Wallet newWallet = new Wallet(accountName, accountType, initialBalance, note);
+        // dbHelper.addAccount(newWallet);
 
-        Toast.makeText(this, "Đã tạo tài khoản '" + accountName + "' thành công!", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Đã tạo ví '" + accountName + "' thành công!", Toast.LENGTH_LONG).show();
         finish();
     }
 }

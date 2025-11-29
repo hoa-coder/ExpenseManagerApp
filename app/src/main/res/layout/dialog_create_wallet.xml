@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/tv_dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tạo Ví Mới"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginBottom="15dp"/>
+
+    <!-- Tên ví -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_wallet_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tên ví (Ví dụ: Ví MoMo, Tiền mặt)"
+            android:inputType="textCapWords" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Số tiền ban đầu -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_initial_balance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Số tiền ban đầu"
+            android:inputType="numberDecimal" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Checkbox Đang sử dụng -->
+    <CheckBox
+        android:id="@+id/cb_is_active"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Đang sử dụng"
+        android:checked="true"
+        android:textColor="#333333"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"/>
+
+    <!-- TextView for Wallet Type (Hidden, only for display/confirmation) -->
+    <TextView
+        android:id="@+id/tv_wallet_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+
+</LinearLayout>

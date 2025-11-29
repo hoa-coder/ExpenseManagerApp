@@ -21,13 +21,15 @@
             android:layout_height="32dp"
             android:src="@android:drawable/ic_menu_revert"
             app:tint="@android:color/white"
-            android:padding="4dp" />
+            android:padding="4dp"
+            android:contentDescription="@string/content_description_back" />
 
         <TextView
+            android:id="@+id/tv_header"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Quản lý tài khoản"
+            android:text="@string/manage_accounts_header"
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -37,9 +39,10 @@
             android:id="@+id/btn_done"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@android:drawable/ic_menu_save"
+            android:src="@android:drawable/ic_menu_delete"
             app:tint="@android:color/white"
-            android:padding="4dp" />
+            android:padding="4dp"
+            android:contentDescription="@string/content_description_delete" />
     </LinearLayout>
 
     <!-- Filter Tabs -->
@@ -53,7 +56,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Đã sử dụng"
+            android:text="@string/filter_used"
             android:textColor="#EC407A"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -65,7 +68,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Đang sử dụng (Không tính tài sản)"
+            android:text="@string/filter_active_non_asset"
             android:textColor="#757575"
             android:textSize="14sp"
             android:layout_marginEnd="16dp"
@@ -73,15 +76,6 @@
             android:drawableTint="#757575"
             android:drawablePadding="4dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Chưa sử dụng"
-            android:textColor="#757575"
-            android:textSize="14sp"
-            android:drawableStart="@android:drawable/checkbox_off_background"
-            android:drawableTint="#757575"
-            android:drawablePadding="4dp" />
     </LinearLayout>
 
     <!-- Account List -->
@@ -91,12 +85,13 @@
         android:layout_weight="1">
 
         <LinearLayout
+            android:id="@+id/ll_wallet_list_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Account Item -->
+            <!-- Account Item (Template) - Sẽ bị xóa khi load data -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -115,14 +110,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:buttonTint="#EC407A" />
+                        android:buttonTint="#EC407A"
+                        android:contentDescription="@string/content_description_checkbox_wallet" />
 
                     <ImageView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:src="@android:drawable/ic_menu_report_image"
                         android:padding="8dp"
-                        android:layout_marginStart="8dp" />
+                        android:layout_marginStart="8dp"
+                        android:contentDescription="Wallet Icon" />
 
                     <TextView
                         android:layout_width="0dp"
@@ -140,7 +137,8 @@
                         android:src="@android:drawable/ic_menu_more"
                         app:tint="#EC407A"
                         android:rotation="90"
-                        android:padding="4dp" />
+                        android:padding="4dp"
+                        android:contentDescription="@string/content_description_menu_more" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -160,7 +158,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="+Thêm vào"
+            android:text="@string/add_wallet_button"
             android:textSize="16sp"
             android:textColor="#212121"
             android:textStyle="bold" />

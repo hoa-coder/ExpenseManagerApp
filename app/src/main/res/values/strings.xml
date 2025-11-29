@@ -30,6 +30,17 @@
     <string name="content_description_switch_balance_icon">Biểu tượng công tắc số dư</string>
     <string name="content_description_switch_stats_icon">Biểu tượng công tắc thống kê</string>
 
+    <!-- Strings for activity_manage_accounts.xml -->
+    <string name="manage_accounts_header">Quản lý tài khoản</string>
+    <string name="add_wallet_button">+Thêm vào</string>
+    <string name="content_description_menu_more">Tùy chọn khác</string>
+    <string name="content_description_checkbox_wallet">Tình trạng hoạt động của ví</string>
+    <string name="filter_used">Đã sử dụng</string>
+    <string name="filter_active_non_asset">Đang sử dụng (Không tính tài sản)</string>
+    <string name="filter_unused">Chưa sử dụng</string>
+    <string name="content_description_delete">Xóa</string>
+
+
     <!-- Strings for activity_add_expense.xml -->
     <string name="content_description_close_btn">Đóng nút</string>
     <string name="tab_income">Thu Nhập</string>

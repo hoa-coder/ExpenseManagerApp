@@ -1,81 +1,181 @@
 package com.example.expensemanagerapp;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class AccountTypesActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ImageView btnBack;
-    // It's more robust to add specific IDs to each clickable LinearLayout in your XML.
-    // However, I will find them within their parent container as a fallback.
     private LinearLayout itemCash, itemDepositCard, itemCreditCard, itemVirtualAccount, itemInvestment, itemReceivable, itemPayable;
+
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account_types);
 
+        // Initialize Firebase
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
         // Khởi tạo nút quay lại
         btnBack = findViewById(R.id.btn_back);
         btnBack.setOnClickListener(v -> finish());
 
-        // Tìm các mục trong ScrollView
-        // Giả sử LinearLayout con trực tiếp của ScrollView chứa tất cả các mục.
-        LinearLayout mainContainer = (LinearLayout) findViewById(R.id.activity_account_types_container); // You need to add this ID to the root LinearLayout inside ScrollView
-
-        // I will assume the order of the items. It is highly recommended to give each item a unique ID.
-        // For example: android:id="@+id/item_cash"
-        // Since the XML does not have IDs for the clickable rows, I cannot directly find them.
-        // I will add a placeholder comment on how to implement it once you add the IDs.
-
-        /*
-        // --- VÍ DỤ SAU KHI BẠN THÊM ID VÀO XML ---
-        // Trong activity_account_types.xml, thêm ID vào mỗi LinearLayout của từng mục, ví dụ:
-        // <LinearLayout android:id="@+id/item_cash" ... >
-
+        // Ánh xạ các mục và thiết lập sự kiện click
         itemCash = findViewById(R.id.item_cash);
         itemDepositCard = findViewById(R.id.item_deposit_card);
         itemCreditCard = findViewById(R.id.item_credit_card);
-        // ... và các mục khác
+        itemVirtualAccount = findViewById(R.id.item_virtual_account);
+        itemInvestment = findViewById(R.id.item_investment);
+        itemReceivable = findViewById(R.id.item_receivable);
+        itemPayable = findViewById(R.id.item_payable);
 
         itemCash.setOnClickListener(this);
         itemDepositCard.setOnClickListener(this);
         itemCreditCard.setOnClickListener(this);
-        // ...
-        */
-
-        // Hiển thị thông báo tạm thời vì chưa có ID trong XML
-        Toast.makeText(this, "Vui lòng thêm ID cho các mục để kích hoạt sự kiện click.", Toast.LENGTH_LONG).show();
-
+        itemVirtualAccount.setOnClickListener(this);
+        itemInvestment.setOnClickListener(this);
+        itemReceivable.setOnClickListener(this);
+        itemPayable.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-        String accountType = "";
-        // Sử dụng if-else để xử lý sự kiện click sau khi đã thêm ID
-        /*
-        if (v.getId() == R.id.item_cash) {
-            accountType = "Tiền mặt";
-        } else if (v.getId() == R.id.item_deposit_card) {
-            accountType = "Thẻ tiền gửi";
-        } else if (v.getId() == R.id.item_credit_card) {
-            accountType = "Thẻ tín dụng";
-        } // ... thêm các else if cho các mục còn lại
-        */
+        String walletType;
 
-        if (!accountType.isEmpty()) {
-            // Hiển thị toast để xác nhận lựa chọn
-            Toast.makeText(this, "Đã chọn: " + accountType, Toast.LENGTH_SHORT).show();
-
-            // Chuyển đến màn hình tạo tài khoản và gửi kèm loại tài khoản
-            // Intent intent = new Intent(AccountTypesActivity.this, CreateAccountActivity.class);
-            // intent.putExtra("ACCOUNT_TYPE", accountType);
-            // startActivity(intent);
+        int id = v.getId();
+        if (id == R.id.item_cash) {
+            walletType = "Tiền mặt";
+        } else if (id == R.id.item_deposit_card) {
+            walletType = "Thẻ tiền gửi";
+        } else if (id == R.id.item_credit_card) {
+            walletType = "Thẻ tín dụng";
+        } else if (id == R.id.item_virtual_account) {
+            walletType = "Tài khoản ảo";
+        } else if (id == R.id.item_investment) {
+            walletType = "Đầu tư";
+        } else if (id == R.id.item_receivable) {
+            walletType = "Phải thu";
+        } else if (id == R.id.item_payable) {
+            walletType = "Phải trả";
+        } else {
+            return;
         }
+
+        showCreateWalletDialog(walletType);
+    }
+
+    private void showCreateWalletDialog(String walletType) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_create_wallet, null);
+        builder.setView(dialogView);
+
+        // Ánh xạ View trong Dialog
+        TextView tvDialogTitle = dialogView.findViewById(R.id.tv_dialog_title);
+        TextInputEditText etWalletName = dialogView.findViewById(R.id.et_wallet_name);
+        TextInputEditText etInitialBalance = dialogView.findViewById(R.id.et_initial_balance);
+        CheckBox cbIsActive = dialogView.findViewById(R.id.cb_is_active);
+
+        tvDialogTitle.setText("Tạo Ví Loại: " + walletType);
+
+        // Thêm nút Lưu/Xác nhận và Hủy
+        builder.setPositiveButton("Lưu", null);
+        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
+        // Override Positive Button Click Listener for manual validation
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String name = etWalletName.getText().toString().trim();
+            String balanceStr = etInitialBalance.getText().toString().trim();
+            boolean isActive = cbIsActive.isChecked();
+
+            // 1. Validate
+            if (name.isEmpty()) {
+                etWalletName.setError("Tên ví không được để trống");
+                etWalletName.requestFocus();
+                return;
+            }
+
+            if (balanceStr.isEmpty()) {
+                etInitialBalance.setError("Số tiền ban đầu không được để trống");
+                etInitialBalance.requestFocus();
+                return;
+            }
+
+            double initialBalance;
+            try {
+                initialBalance = Double.parseDouble(balanceStr);
+                if (initialBalance < 0) {
+                    etInitialBalance.setError("Số tiền không được âm");
+                    etInitialBalance.requestFocus();
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                etInitialBalance.setError("Số tiền không hợp lệ");
+                etInitialBalance.requestFocus();
+                return;
+            }
+
+            // 2. Save to Firebase
+            saveWalletToFirebase(walletType, name, initialBalance, isActive, alertDialog);
+        });
+    }
+
+    private void saveWalletToFirebase(String type, String name, double balance, boolean isActive, AlertDialog dialog) {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "❌ Lỗi: Người dùng chưa đăng nhập. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String userId = currentUser.getUid();
+        // Đường dẫn: users/{userId}/wallets/{walletId}
+        CollectionReference walletsRef = db.collection("users").document(userId).collection("wallets");
+
+        // Tạo ID ví mới do Firestore cấp
+        String walletId = walletsRef.document().getId();
+
+        Wallet newWallet = new Wallet(
+                walletId,
+                name,
+                type,
+                balance,
+                isActive,
+                System.currentTimeMillis()
+        );
+
+        // ✅ Thành công - Đóng dialog
+        dialog.dismiss();
+
+        // ✅ Hiển thị thông báo
+        Toast.makeText(this, "✅ Đã tạo ví '" + name + "' thành công!", Toast.LENGTH_SHORT).show();
+
+        // ✅ Chuyển sang màn hình quản lý ví
+        Intent intent = new Intent(AccountTypesActivity.this, ManageAccountsActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish(); // Đóng màn hình hiện tại
     }
 }

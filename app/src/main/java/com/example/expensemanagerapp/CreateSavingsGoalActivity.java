@@ -242,6 +242,7 @@ public class CreateSavingsGoalActivity extends AppCompatActivity implements Fire
 
         // Lưu vào Firebase Firestore
         FirebaseManager.getInstance().saveGoal(newGoal, this);
+        onSuccess("Thêm mục tiêu thành công");
     }
 
     @Override

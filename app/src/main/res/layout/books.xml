@@ -25,13 +25,6 @@
                 android:gravity="center_vertical"
                 android:layout_marginBottom="16dp">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_search"
-                    app:tint="@android:color/white"
-                    android:contentDescription="Search icon" />
-
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -42,14 +35,6 @@
                     android:gravity="center"
                     app:drawableEndCompat="@android:drawable/arrow_down_float"
                     app:drawableTint="@android:color/white" />
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_add"
-                    app:tint="@android:color/white"
-                    android:layout_marginStart="8dp"
-                    android:contentDescription="Add icon" />
 
             </LinearLayout>
 
@@ -297,59 +282,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@android:drawable/ic_menu_day"
-                        android:contentDescription="Daily budget icon" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="12dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="daily (Hàng ngày/1/N)"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="10%"
-                            android:textSize="12sp"
-                            android:textColor="#757575" />
-
-                        <ProgressBar
-                            android:layout_width="match_parent"
-                            android:layout_height="4dp"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:progress="10"
-                            android:max="100" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="$180"
-                        android:textSize="16sp"
-                        android:textColor="#FF5252"
-                        android:textStyle="bold"
-                        android:layout_gravity="center" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                app:cardElevation="2dp"/>
 
             <!-- Savings goals -->
             <TextView
