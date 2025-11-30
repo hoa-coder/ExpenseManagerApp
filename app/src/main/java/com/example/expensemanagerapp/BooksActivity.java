@@ -732,7 +732,8 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
             Intent intent = new Intent(this, ManageAccountsActivity.class);
             startActivity(intent);
         } else if (v == bottomNavAnalysis) {
-            Toast.makeText(this, "Điều hướng đến Phân tích", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, AnalysisActivity.class); // Điều hướng đến AnalysisActivity
+            startActivity(intent);
         } else if (v == bottomNavMe) {
             Intent intent = new Intent(this, AccountActivity.class);
             startActivity(intent);

@@ -1,7 +1,6 @@
 package com.example.expensemanagerapp;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -138,8 +137,16 @@ public class AccountTypesActivity extends AppCompatActivity implements View.OnCl
                 return;
             }
 
-            // 2. Save to Firebase
+            // 2. Hiển thị Toast đang lưu
+            Toast.makeText(AccountTypesActivity.this, "Đang tạo ví...", Toast.LENGTH_SHORT).show();
+
+            // 3. Save to Firebase
             saveWalletToFirebase(walletType, name, initialBalance, isActive, alertDialog);
+
+            // Đóng Dialog và hiện thông báo , quay trở về
+            Toast.makeText(this, "✅ Đã tạo ví '" + name + "' thành công!", Toast.LENGTH_SHORT).show();
+            alertDialog.dismiss();
+            finish();
         });
     }
 
@@ -166,16 +173,20 @@ public class AccountTypesActivity extends AppCompatActivity implements View.OnCl
                 System.currentTimeMillis()
         );
 
-        // ✅ Thành công - Đóng dialog
-        dialog.dismiss();
+        walletsRef.document(walletId).set(newWallet)
+                .addOnSuccessListener(aVoid -> {
+                    // ✅ LƯU THÀNH CÔNG
+                    Toast.makeText(this, "✅ Đã tạo ví '" + name + "' thành công!", Toast.LENGTH_SHORT).show();
 
-        // ✅ Hiển thị thông báo
-        Toast.makeText(this, "✅ Đã tạo ví '" + name + "' thành công!", Toast.LENGTH_SHORT).show();
+                    // Đóng dialog
+                    dialog.dismiss();
 
-        // ✅ Chuyển sang màn hình quản lý ví
-        Intent intent = new Intent(AccountTypesActivity.this, ManageAccountsActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-        finish(); // Đóng màn hình hiện tại
+                    // ✅ Quay về ManageAccountsActivity (Snapshot Listener sẽ tự động cập nhật)
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    // ❌ LƯU THẤT BẠI
+                    Toast.makeText(this, "❌ Lỗi khi lưu ví: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
     }
 }

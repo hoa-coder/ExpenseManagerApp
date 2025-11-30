@@ -2,6 +2,8 @@ package com.example.expensemanagerapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log; // Import Log
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -13,17 +15,22 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.appcompat.app.AlertDialog; // Import AlertDialog
 
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.Timestamp;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -224,26 +231,29 @@ public class ManageAccountsActivity extends AppCompatActivity {
         }
 
         String userId = currentUser.getUid();
+        Log.d("ManageAccounts", "Loading wallets for UserID: " + userId); // LOGGING
 
         // ✅ Gỡ bỏ listener cũ nếu có (tránh duplicate listeners)
         if (walletListenerRegistration != null) {
             walletListenerRegistration.remove();
+            Log.d("ManageAccounts", "Removed old wallet listener."); // LOGGING
         }
 
         // ✅ Đăng ký Snapshot Listener để nhận cập nhật realtime
         walletListenerRegistration = db.collection("users")
                 .document(userId)
                 .collection("wallets")
-                .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
                 .addSnapshotListener(this, (queryDocumentSnapshots, e) -> {
                     if (e != null) {
+                        // Bắt lỗi lắng nghe (ví dụ: mất kết nối)
+                        Log.e("ManageAccounts", "Error listening for wallet snapshots: " + e.getMessage()); // LOGGING
                         Toast.makeText(this, "❌ Lỗi lắng nghe danh sách ví: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         return;
                     }
 
                     if (queryDocumentSnapshots != null) {
+                        Log.d("ManageAccounts", "Snapshot received. Document count: " + queryDocumentSnapshots.size()); // LOGGING
                         walletList.clear();
-
                         // ✅ Xóa tất cả CardView cũ
                         if (accountListContainer != null) {
                             accountListContainer.removeAllViews();
@@ -251,10 +261,40 @@ public class ManageAccountsActivity extends AppCompatActivity {
 
                         // ✅ Thêm lại các ví từ Firestore
                         for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                            Wallet wallet = document.toObject(Wallet.class);
-                            walletList.add(wallet);
-                            addWalletCardView(wallet);
+                            try {
+                                // Thử ánh xạ thủ công để kiểm soát các kiểu dữ liệu khác nhau (long vs Timestamp)
+                                Map<String, Object> data = document.getData();
+                                if (data != null) {
+                                    Wallet wallet = document.toObject(Wallet.class);
+                                    long timestamp = 0;
+                                    
+                                    Object tsField = data.get("timestamp");
+                                    if (tsField instanceof Long) {
+                                        timestamp = (Long) tsField;
+                                    } else if (tsField instanceof Timestamp) {
+                                        timestamp = ((Timestamp) tsField).toDate().getTime();
+                                    }
+                                    
+                                    // Gán lại ID và timestamp để đảm bảo tính nhất quán
+                                    wallet.setId(document.getId());
+                                    wallet.setTimestamp(timestamp);
+
+                                    // CHỈ THÊM VÍ NẾU CÁC TRƯỜNG QUAN TRỌNG KHÔNG NULL
+                                    if(wallet.getId() != null && wallet.getName() != null && wallet.getType() != null) {
+                                        walletList.add(wallet);
+                                        Log.d("ManageAccounts", "Added wallet to list: " + wallet.getName() + " (ID: " + wallet.getId() + ")"); // LOGGING
+                                        addWalletCardView(wallet);
+                                    } else {
+                                        Log.w("ManageAccounts", "Skipping wallet due to missing data. ID: " + document.getId()); // LOGGING
+                                    }
+                                }
+                            } catch (Exception ex) {
+                                // BẮT LỖI ÁNH XẠ (MAPPING ERROR) TẠI ĐÂY
+                                Log.e("ManageAccounts", "Mapping error for document " + document.getId() + ": " + ex.getMessage()); // LOGGING
+                            }
                         }
+                        
+                        Log.d("ManageAccounts", "Finished processing documents. Total in list: " + walletList.size()); // LOGGING
 
                         // ✅ Hiển thị thông báo nếu danh sách trống
                         if (walletList.isEmpty() && !isDeleteMode) {
@@ -377,28 +417,27 @@ public class ManageAccountsActivity extends AppCompatActivity {
 
         innerLayout.addView(infoLayout);
 
-        // Icon menu (3 chấm) - Ẩn trong chế độ xóa
+        // Icon menu (3 chấm) - Thay đổi thành icon chỉnh sửa
         if (!isDeleteMode) {
-            ImageView menuIcon = new ImageView(this);
-            LinearLayout.LayoutParams menuParams = new LinearLayout.LayoutParams(
+            ImageView editIcon = new ImageView(this);
+            LinearLayout.LayoutParams editIconParams = new LinearLayout.LayoutParams(
                     (int) (32 * getResources().getDisplayMetrics().density),
                     (int) (32 * getResources().getDisplayMetrics().density)
             );
-            menuIcon.setLayoutParams(menuParams);
-            menuIcon.setImageResource(android.R.drawable.ic_menu_more);
-            menuIcon.setRotation(90);
-            menuIcon.setPadding(
+            editIcon.setLayoutParams(editIconParams);
+            editIcon.setImageResource(R.drawable.ic_edit_pencil); // Sử dụng icon chỉnh sửa
+            editIcon.setPadding(
                     (int) (4 * getResources().getDisplayMetrics().density),
                     (int) (4 * getResources().getDisplayMetrics().density),
                     (int) (4 * getResources().getDisplayMetrics().density),
                     (int) (4 * getResources().getDisplayMetrics().density)
             );
-            menuIcon.setColorFilter(0xFFEC407A);
+            editIcon.setColorFilter(0xFFEC407A);
 
-            menuIcon.setOnClickListener(v -> {
-                showWalletOptionsDialog(wallet);
+            editIcon.setOnClickListener(v -> {
+                showEditAccountDialog(wallet); // Gọi dialog chỉnh sửa
             });
-            innerLayout.addView(menuIcon);
+            innerLayout.addView(editIcon);
         }
 
         cardView.addView(innerLayout);
@@ -437,7 +476,7 @@ public class ManageAccountsActivity extends AppCompatActivity {
             return;
         }
 
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Xác nhận xóa");
         builder.setMessage("Bạn có chắc muốn xóa " + selectedWalletIds.size() + " ví đã chọn?");
         builder.setPositiveButton("Xóa", (dialog, which) -> deleteSelectedWallets());
@@ -506,6 +545,7 @@ public class ManageAccountsActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> {
                     String status = isActive ? "kích hoạt" : "vô hiệu hóa";
                     Toast.makeText(this, "Đã " + status + " ví: " + wallet.getName(), Toast.LENGTH_SHORT).show();
+                    // Listener sẽ tự động cập nhật danh sách
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "❌ Lỗi cập nhật: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -513,15 +553,14 @@ public class ManageAccountsActivity extends AppCompatActivity {
     }
 
     /**
-     * ✅ Hiển thị dialog tùy chọn (Edit/Delete)
+     * ✅ Hiển thị dialog tùy chọn (Edit/Delete) - Đã cập nhật để gọi showEditAccountDialog
      */
     private void showWalletOptionsDialog(Wallet wallet) {
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Tùy chọn ví: " + wallet.getName());
         builder.setItems(new String[]{"✏️ Chỉnh sửa", "🗑️ Xóa"}, (dialog, which) -> {
             if (which == 0) {
-                // TODO: Mở màn hình chỉnh sửa ví
-                Toast.makeText(this, "Tính năng chỉnh sửa đang phát triển", Toast.LENGTH_SHORT).show();
+                showEditAccountDialog(wallet); // Gọi dialog chỉnh sửa ví
             } else if (which == 1) {
                 confirmDeleteWallet(wallet);
             }
@@ -531,10 +570,94 @@ public class ManageAccountsActivity extends AppCompatActivity {
     }
 
     /**
+     * ✅ Hiển thị dialog chỉnh sửa ví
+     */
+    private void showEditAccountDialog(Wallet wallet) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_edit_account, null);
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+
+        // Tham chiếu views trong dialog
+        TextInputEditText etAccountName = dialogView.findViewById(R.id.et_account_name);
+        TextInputEditText etAmountAdjustment = dialogView.findViewById(R.id.et_amount_adjustment);
+        TextView tvCurrentBalance = dialogView.findViewById(R.id.tv_current_balance);
+        CheckBox cbIncludeInTotal = dialogView.findViewById(R.id.cb_include_in_total);
+        Button btnCancel = dialogView.findViewById(R.id.btn_cancel);
+        Button btnSave = dialogView.findViewById(R.id.btn_save);
+
+        // Điền sẵn dữ liệu hiện tại
+        etAccountName.setText(wallet.getName());
+        tvCurrentBalance.setText("Số dư hiện tại: " + currencyFormatter.format(wallet.getBalance()));
+        cbIncludeInTotal.setChecked(wallet.isActive()); // Sử dụng isActive() cho CheckBox
+
+        // Xử lý nút Hủy
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        // Xử lý nút Lưu
+        btnSave.setOnClickListener(v -> {
+            String newName = etAccountName.getText().toString().trim();
+            String amountAdjStr = etAmountAdjustment.getText().toString().trim();
+            boolean newIsActive = cbIncludeInTotal.isChecked();
+
+            if (newName.isEmpty()) {
+                etAccountName.setError("Tên ví không được để trống");
+                return;
+            }
+
+            double amountAdjustment = 0;
+            if (!amountAdjStr.isEmpty()) {
+                try {
+                    amountAdjustment = Double.parseDouble(amountAdjStr);
+                } catch (NumberFormatException e) {
+                    etAmountAdjustment.setError("Số tiền không hợp lệ");
+                    return;
+                }
+            }
+
+            double newBalance = wallet.getBalance() + amountAdjustment;
+
+            // Cập nhật ví vào Firebase
+            updateWalletInFirebase(wallet.getId(), newName, newBalance, newIsActive);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    /**
+     * ✅ Cập nhật ví vào Firebase Firestore
+     */
+    private void updateWalletInFirebase(String walletId, String newName, double newBalance, boolean newIsActive) {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) return;
+
+        String userId = currentUser.getUid();
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("name", newName);
+        updates.put("balance", newBalance);
+        updates.put("active", newIsActive);
+
+        db.collection("users")
+                .document(userId)
+                .collection("wallets")
+                .document(walletId)
+                .update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "✅ Đã cập nhật ví thành công!", Toast.LENGTH_SHORT).show();
+                    // Listener sẽ tự động tải lại danh sách
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "❌ Lỗi cập nhật ví: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    /**
      * ✅ Xác nhận xóa ví đơn lẻ
      */
     private void confirmDeleteWallet(Wallet wallet) {
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Xác nhận xóa");
         builder.setMessage("Bạn có chắc muốn xóa ví '" + wallet.getName() + "'?");
         builder.setPositiveButton("Xóa", (dialog, which) -> deleteWallet(wallet));
@@ -595,8 +718,9 @@ public class ManageAccountsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_CREATE_WALLET && resultCode == RESULT_OK) {
-            // Listener sẽ tự động cập nhật danh sách
-            Toast.makeText(this, "✅ Ví mới đã được thêm!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "✅ Ví mới đã được thêm! Danh sách đang được làm mới...", Toast.LENGTH_SHORT).show();
+            // Buộc tải lại dữ liệu ngay lập tức để giải quyết vấn đề hiển thị chậm/lỗi
+            loadWalletsFromFirebase(); 
         }
     }
 

@@ -1,6 +1,7 @@
 package com.example.expensemanagerapp;
 
 import java.io.Serializable;
+import java.util.Date; // Import Date
 
 public class Transaction implements Serializable {
     private String id; // ID từ Firestore document
@@ -15,12 +16,12 @@ public class Transaction implements Serializable {
     }
 
     // Constructor 5 tham số (không có id - dùng khi tạo mới transaction)
-    public Transaction(String type, double amount, String category, String note, long timestamp) {
-        this.type = type;
-        this.amount = amount;
+    public Transaction(String category, double amount, String type, Date date, String note) { // Thay đổi thứ tự và kiểu dữ liệu
         this.category = category;
+        this.amount = amount;
+        this.type = type;
+        this.timestamp = date.getTime(); // Chuyển Date sang timestamp
         this.note = note;
-        this.timestamp = timestamp;
     }
 
     // ✅ THÊM MỚI: Constructor 6 tham số (có id - dùng khi lấy từ Firebase hoặc truyền qua Intent)
@@ -80,5 +81,10 @@ public class Transaction implements Serializable {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    // Helper method to get Date object from timestamp
+    public Date getDate() {
+        return new Date(timestamp);
     }
 }

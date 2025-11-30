@@ -70,6 +70,10 @@
         <activity
             android:name=".GoalDetailActivity"
             android:exported="false" />
+        <!-- KHAI BÁO THÊM: AnalysisActivity -->
+        <activity
+            android:name=".AnalysisActivity"
+            android:exported="false" />
         <!-- Kết thúc các Activity mới được thêm vào -->
 
     </application>
