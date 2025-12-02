@@ -139,13 +139,17 @@
                     android:layout_marginBottom="12dp"/>
 
                 <TextView
+                    android:id="@+id/tv_security_settings"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Cài đặt bảo mật"
                     android:textSize="16sp"
                     android:drawableStart="@android:drawable/ic_secure"
                     android:drawablePadding="16dp"
-                    android:textColor="@android:color/black"/>
+                    android:textColor="@android:color/black"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"/>
 
             </LinearLayout>
 
