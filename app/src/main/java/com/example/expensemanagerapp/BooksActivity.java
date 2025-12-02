@@ -16,6 +16,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.NumberPicker; // Used for custom picker
+import android.widget.EditText; // NEW for quick edit dialog
+import android.text.InputType; // NEW for quick edit dialog
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog; // New: For Custom Dialog
@@ -43,6 +45,8 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
 
     private static final int ADD_TRANSACTION_REQUEST = 1;
     private static final int EDIT_GOAL_REQUEST = 2; // Request code mới
+    private static final int EDIT_TRANSACTION_REQUEST = 3; // New: Request code for editing a transaction
+    public static final String EXTRA_TRANSACTION = "com.example.expensemanagerapp.EXTRA_TRANSACTION"; // Key for passing transaction object
     private static final String TAG = "BooksActivity";
 
     private FloatingActionButton fabEdit;
@@ -285,41 +289,45 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         // 2. Query Firebase Firestore
         query.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Transaction> monthlyTransactions = new ArrayList<>();
-                    double totalIncome = 0;
-                    double totalExpense = 0;
+                    // **START: Đảm bảo chạy trên Main Thread để cập nhật UI**
+                    runOnUiThread(() -> {
+                        List<Transaction> monthlyTransactions = new ArrayList<>();
+                        double totalIncome = 0;
+                        double totalExpense = 0;
 
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        try {
-                            Transaction transaction = document.toObject(Transaction.class);
-                            transaction.setId(document.getId());
-                            monthlyTransactions.add(transaction);
-                            
-                            // Tính tổng cho phạm vi đang chọn
-                            if (transaction.getType().equalsIgnoreCase("income")) {
-                                totalIncome += transaction.getAmount();
-                            } else {
-                                totalExpense += transaction.getAmount();
+                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                            try {
+                                Transaction transaction = document.toObject(Transaction.class);
+                                transaction.setId(document.getId());
+                                monthlyTransactions.add(transaction);
+                                
+                                // Tính tổng cho phạm vi đang chọn
+                                if (transaction.getType().equalsIgnoreCase("income")) {
+                                    totalIncome += transaction.getAmount();
+                                } else {
+                                    totalExpense += transaction.getAmount();
+                                }
+
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error converting document to Transaction: " + e.getMessage());
                             }
-
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error converting document to Transaction: " + e.getMessage());
                         }
-                    }
 
-                    // Store totals
-                    currentTotalIncome = totalIncome;
-                    currentTotalExpense = totalExpense;
+                        // Store totals
+                        currentTotalIncome = totalIncome;
+                        currentTotalExpense = totalExpense;
 
-                    // Cập nhật tổng quan tài chính
-                    updateFinancialOverview(currentTotalIncome, currentTotalExpense);
+                        // Cập nhật tổng quan tài chính
+                        updateFinancialOverview(currentTotalIncome, currentTotalExpense);
 
-                    // Hiển thị danh sách giao dịch 
-                    processAndDisplayTransactions(monthlyTransactions);
+                        // Hiển thị danh sách giao dịch 
+                        processAndDisplayTransactions(monthlyTransactions);
 
-                    if (monthlyTransactions.isEmpty()) {
-                         // Toast.makeText(this, "Chưa có giao dịch nào trong phạm vi này.", Toast.LENGTH_SHORT).show();
-                    }
+                        if (monthlyTransactions.isEmpty()) {
+                             // Toast.makeText(this, "Chưa có giao dịch nào trong phạm vi này.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    // **END: runOnUiThread**
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Lỗi khi tải giao dịch: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -628,6 +636,16 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         tvAmount.setTypeface(null, android.graphics.Typeface.BOLD);
         itemLayout.addView(tvAmount);
 
+        // Set click listener for editing (short press)
+        itemLayout.setOnClickListener(v -> onTransactionItemClicked(transaction)); 
+        
+        // Set long click listener for options dialog (long press)
+        itemLayout.setOnLongClickListener(v -> {
+            showTransactionOptionsDialog(transaction);
+            return true; // Consume the long click
+        });
+
+
         DecimalFormat formatter = new DecimalFormat("#,### đ");
         String formattedAmount = formatter.format(transaction.getAmount());
 
@@ -687,6 +705,161 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+    /**
+     * Handles click on a transaction item to open the Edit Transaction screen.
+     */
+    private void onTransactionItemClicked(Transaction transaction) {
+        // Thay đổi: Thay vì chuyển Activity, chúng ta mở dialog sửa nhanh
+        showQuickEditTransactionDialog(transaction);
+    }
+    
+    /**
+     * Hiển thị dialog tùy chọn Chỉnh sửa/Xóa khi nhấn giữ.
+     */
+    private void showTransactionOptionsDialog(final Transaction transaction) {
+        final String[] items = {"Chỉnh sửa (Cập nhật)", "Xóa giao dịch"};
+        
+        new AlertDialog.Builder(this)
+            .setTitle("Tùy chọn giao dịch")
+            .setItems(items, (dialog, which) -> {
+                if (which == 0) {
+                    // Chỉnh sửa (Cập nhật) - Mở dialog sửa nhanh
+                    showQuickEditTransactionDialog(transaction);
+                } else if (which == 1) {
+                    // Xóa giao dịch
+                    showDeleteConfirmationDialog(transaction);
+                }
+            })
+            .setNegativeButton("Hủy", null)
+            .show();
+    }
+
+    /**
+     * Hiển thị dialog sửa nhanh cho số tiền và ghi chú.
+     */
+    private void showQuickEditTransactionDialog(final Transaction transaction) {
+        // Tạo layout cho dialog
+        Context context = this;
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(50, 50, 50, 50);
+
+        // 1. EditText cho Số tiền
+        final EditText amountInput = new EditText(context);
+        amountInput.setHint("Số tiền (đ)");
+        amountInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        amountInput.setText(String.valueOf(transaction.getAmount()));
+        layout.addView(amountInput);
+
+        // 2. EditText cho Ghi chú
+        final EditText noteInput = new EditText(context);
+        noteInput.setHint("Ghi chú");
+        noteInput.setInputType(InputType.TYPE_CLASS_TEXT);
+        noteInput.setText(transaction.getNote());
+        layout.addView(noteInput);
+        
+        new AlertDialog.Builder(context)
+            .setTitle("Sửa nhanh giao dịch")
+            .setMessage("Giao dịch: " + transaction.getCategory())
+            .setView(layout)
+            .setPositiveButton("Lưu", (dialog, which) -> {
+                try {
+                    double newAmount = Double.parseDouble(amountInput.getText().toString().trim());
+                    String newNote = noteInput.getText().toString().trim();
+                    
+                    if (newAmount <= 0) {
+                        Toast.makeText(context, "Số tiền phải lớn hơn 0.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    
+                    updateTransactionInFirebase(transaction, newAmount, newNote);
+                    
+                } catch (NumberFormatException e) {
+                    Toast.makeText(context, "Số tiền không hợp lệ.", Toast.LENGTH_SHORT).show();
+                }
+            })
+            .setNegativeButton("Hủy", null)
+            .show();
+    }
+
+    /**
+     * Cập nhật số tiền và ghi chú của giao dịch trên Firebase.
+     */
+    private void updateTransactionInFirebase(final Transaction transaction, double newAmount, String newNote) {
+        FirebaseManager manager = FirebaseManager.getInstance();
+        if (manager == null || transaction.getId() == null) {
+            Toast.makeText(this, "Lỗi: Không thể cập nhật giao dịch.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CollectionReference transactionsRef = manager.getUserCollectionRef(FirebaseManager.TRANSACTIONS_COLLECTION);
+        if (transactionsRef == null) {
+            Toast.makeText(this, "Lỗi: Không thể truy cập dữ liệu.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Tạo Map chứa các trường cần cập nhật
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("amount", newAmount);
+        updates.put("note", newNote);
+
+        // Gọi update không đợi kết quả
+        transactionsRef.document(transaction.getId()).update(updates);
+
+        // Thông báo và reload ngay lập tức
+        Toast.makeText(this, "Cập nhật giao dịch thành công.", Toast.LENGTH_SHORT).show();
+        loadTransactionsData();
+        loadSavingsGoals();
+    }
+    
+    /**
+     * Hiển thị hộp thoại xác nhận xóa.
+     */
+    private void showDeleteConfirmationDialog(final Transaction transaction) {
+        new AlertDialog.Builder(this)
+                .setTitle("Xác nhận Xóa")
+                .setMessage("Bạn có chắc chắn muốn xóa giao dịch này không?\n\n" +
+                        "Hành động này không thể hoàn tác.")
+                .setPositiveButton("Xóa", (dialog, which) -> deleteTransaction(transaction))
+                .setNegativeButton("Hủy", null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    private void deleteTransaction(Transaction transaction) {
+        FirebaseManager manager = FirebaseManager.getInstance();
+        if (manager == null || transaction.getId() == null) {
+            Toast.makeText(this, "Lỗi: Không thể xóa giao dịch.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CollectionReference transactionsRef = manager.getUserCollectionRef(FirebaseManager.TRANSACTIONS_COLLECTION);
+        if (transactionsRef == null) {
+            Toast.makeText(this, "Lỗi: Không thể truy cập dữ liệu.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Tạo loading dialog trực tiếp trong code
+        AlertDialog loadingDialog = new AlertDialog.Builder(this)
+                .setMessage("Đang xóa...")
+                .setCancelable(false)
+                .create();
+        loadingDialog.show();
+
+        transactionsRef.document(transaction.getId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    loadingDialog.dismiss();
+                    Toast.makeText(this, "Đã xóa giao dịch thành công.", Toast.LENGTH_SHORT).show();
+                    loadTransactionsData();
+                    loadSavingsGoals();
+                })
+                .addOnFailureListener(e -> {
+                    loadingDialog.dismiss();
+                    Toast.makeText(this, "Lỗi khi xóa giao dịch: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Error deleting transaction", e);
+                });
+    }
     private void onSeeAllTransactionsClicked() {
         if (tvSeeAllTransactions == null) return;
         boolean currentlyExpanded = tvSeeAllTransactions.getText().toString().equals("Thu gọn");
@@ -753,8 +926,8 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-            if (requestCode == ADD_TRANSACTION_REQUEST) {
-                loadTransactionsData(); // Tải lại dữ liệu sau khi thêm giao dịch mới
+            if (requestCode == ADD_TRANSACTION_REQUEST || requestCode == EDIT_TRANSACTION_REQUEST) {
+                loadTransactionsData(); // Tải lại dữ liệu sau khi thêm/sửa giao dịch mới
             } else if (requestCode == EDIT_GOAL_REQUEST) {
                 // Sửa lỗi: đảm bảo làm mới danh sách mục tiêu sau khi xóa/chỉnh sửa
                 loadSavingsGoals(); 

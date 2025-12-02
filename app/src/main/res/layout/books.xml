@@ -23,20 +23,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Sổ cái mặc định"
-                    android:textColor="@android:color/white"
-                    android:textSize="16sp"
-                    android:gravity="center"
-                    app:drawableEndCompat="@android:drawable/arrow_down_float"
-                    app:drawableTint="@android:color/white" />
-
-            </LinearLayout>
+                android:layout_marginBottom="16dp"/>
 
             <!-- Quick Menu -->
             <LinearLayout
@@ -44,74 +31,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center"
-                android:layout_marginBottom="16dp">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@android:drawable/ic_menu_mapmode"
-                        app:tint="@android:color/white"
-                        android:contentDescription="Travel icon" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Travel"
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@android:drawable/ic_menu_report_image"
-                        app:tint="@android:color/white"
-                        android:contentDescription="Ledger icon" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Sổ cái"
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@android:drawable/ic_input_add"
-                        app:tint="@android:color/white"
-                        android:contentDescription="Add item icon" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Thêm..."
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp" />
-                </LinearLayout>
-            </LinearLayout>
+                android:layout_marginBottom="16dp"/>
 
             <!-- Financial overview card -->
             <androidx.cardview.widget.CardView
@@ -131,32 +51,32 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="16dp">
-                        
+                        android:orientation="horizontal">
+
                         <!-- Layout chọn tháng/năm -->
                         <LinearLayout
                             android:id="@+id/month_year_picker_layout"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="horizontal"
-                            android:gravity="center"
                             android:background="?attr/selectableItemBackground"
                             android:clickable="true"
                             android:focusable="true"
+                            android:gravity="center"
+                            android:orientation="horizontal"
                             android:padding="8dp">
-                            
+
                             <TextView
                                 android:id="@+id/tv_selected_month_year"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:layout_marginEnd="8dp"
                                 android:text="6/2025"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
-                                android:layout_marginStart="8dp"
-                                android:layout_marginEnd="8dp"
                                 app:drawableEndCompat="@android:drawable/arrow_down_float" />
 
                         </LinearLayout>
@@ -166,12 +86,12 @@
                             android:id="@+id/iv_toggle_visibility"
                             android:layout_width="28dp"
                             android:layout_height="28dp"
-                            android:src="@android:drawable/ic_menu_view"
-                            android:contentDescription="Toggle visibility"
                             android:layout_marginStart="16dp"
-                            android:padding="4dp"
                             android:clickable="true"
+                            android:contentDescription="Toggle visibility"
                             android:focusable="true"
+                            android:padding="4dp"
+                            android:src="@android:drawable/ic_menu_view"
                             app:tint="#616161" />
 
                         <ImageView
@@ -197,8 +117,8 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="center">
+                            android:gravity="center"
+                            android:orientation="vertical">
 
                             <TextView
                                 android:id="@+id/tv_total_amount"
@@ -224,8 +144,8 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="center">
+                            android:gravity="center"
+                            android:orientation="vertical">
 
                             <TextView
                                 android:id="@+id/tv_income_amount"
@@ -251,8 +171,8 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="center">
+                            android:gravity="center"
+                            android:orientation="vertical">
 
                             <TextView
                                 android:id="@+id/tv_expense_amount"
@@ -294,30 +214,32 @@
                 android:layout_marginBottom="8dp" />
 
             <!-- Goals grid -->
+
+            <!-- PHẦN MỚI: ScrollView lịch sử giao dịch -->
             <LinearLayout
                 android:id="@+id/ll_goals_grid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:orientation="horizontal"
-                android:weightSum="4"
-                android:layout_marginBottom="16dp">
+                android:weightSum="4">
 
                 <LinearLayout
                     android:id="@+id/ll_add_goal"
                     android:layout_width="0dp"
                     android:layout_height="80dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:background="@android:color/white"
                     android:layout_margin="4dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/white"
+                    android:gravity="center"
+                    android:orientation="vertical"
                     android:padding="8dp">
 
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@android:drawable/ic_menu_add"
-                        android:contentDescription="Add goal icon" />
+                        android:contentDescription="Add goal icon"
+                        android:src="@android:drawable/ic_menu_add" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -327,7 +249,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- PHẦN MỚI: ScrollView lịch sử giao dịch -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
