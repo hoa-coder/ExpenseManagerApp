@@ -29,6 +29,8 @@ import com.google.firebase.auth.FirebaseUser;
 public class AccountActivity extends AppCompatActivity {
 
     private static final String TAG = "AccountActivity";
+    // Thêm cờ để biết nếu cần reload BooksActivity
+    private boolean dataDeleted = false; 
 
     private ImageView ivAvatar;
     private TextView tvDisplayName;
@@ -36,9 +38,23 @@ public class AccountActivity extends AppCompatActivity {
     private TextView tvUid;
     private Button btnLogout;
     private ImageView btnBack;
-    private TextView tvSecuritySettings; // New field for security settings
+    private TextView tvSecuritySettings;
+    private TextView tvDataManagement;
 
     private FirebaseAuth mAuth;
+    private FirebaseManager firebaseManager;
+
+    // Define a custom functional interface for our confirmation click listener
+    @FunctionalInterface
+    interface ConfirmationAction {
+        void run();
+    }
+
+    // Define a custom functional interface for our generic confirmation dialog logic
+    @FunctionalInterface
+    interface ConfirmationDialogClickListener {
+        void onClick(View v, String title, String message, ConfirmationAction deleteAction);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -46,9 +62,19 @@ public class AccountActivity extends AppCompatActivity {
         setContentView(R.layout.activity_account);
 
         mAuth = FirebaseAuth.getInstance();
+        firebaseManager = FirebaseManager.getInstance(); // Initialize FirebaseManager
 
         initViews();
         loadUserInfo();
+    }
+    
+    @Override
+    public void finish() {
+        if (dataDeleted) {
+            // Đặt kết quả OK nếu có dữ liệu bị xóa để BooksActivity có thể reload
+            setResult(RESULT_OK); 
+        }
+        super.finish();
     }
 
     private void initViews() {
@@ -58,7 +84,8 @@ public class AccountActivity extends AppCompatActivity {
         tvUid = findViewById(R.id.tv_uid);
         btnLogout = findViewById(R.id.btn_logout);
         btnBack = findViewById(R.id.btn_back);
-        tvSecuritySettings = findViewById(R.id.tv_security_settings); // Initialize new view
+        tvSecuritySettings = findViewById(R.id.tv_security_settings);
+        tvDataManagement = findViewById(R.id.tv_data_management);
 
         btnBack.setOnClickListener(v -> {
             finish();
@@ -66,8 +93,9 @@ public class AccountActivity extends AppCompatActivity {
 
         btnLogout.setOnClickListener(v -> logout());
 
-        // New click listener for "Cài đặt bảo mật"
         tvSecuritySettings.setOnClickListener(v -> showChangePasswordDialog());
+
+        tvDataManagement.setOnClickListener(v -> showDataManagementDialog());
     }
 
     private void loadUserInfo() {
@@ -202,4 +230,113 @@ public class AccountActivity extends AppCompatActivity {
             }
         });
     }
+
+    /**
+     * Hiển thị dialog Quản lý dữ liệu và xử lý logic xóa dữ liệu.
+     */
+    private void showDataManagementDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_data_management, null);
+        dialogBuilder.setView(dialogView);
+
+        TextView btnDeleteIncome = dialogView.findViewById(R.id.btn_delete_income);
+        TextView btnDeleteExpense = dialogView.findViewById(R.id.btn_delete_expense);
+        TextView btnDeleteAllTransactions = dialogView.findViewById(R.id.btn_delete_all_transactions);
+        TextView btnDeleteGoals = dialogView.findViewById(R.id.btn_delete_goals);
+        TextView btnDeleteWallets = dialogView.findViewById(R.id.btn_delete_wallets);
+        TextView btnDeleteAllData = dialogView.findViewById(R.id.btn_delete_all_data);
+        Button btnCancel = dialogView.findViewById(R.id.btn_cancel_data_management);
+
+        AlertDialog dataManagementDialog = dialogBuilder.create();
+        dataManagementDialog.show();
+
+        // Helper for OnCompleteListener - now also dismisses the data management dialog on success
+        FirebaseManager.OnCompleteListener deleteCompleteListener = new FirebaseManager.OnCompleteListener() {
+            @Override
+            public void onSuccess(String message) {
+                runOnUiThread(() -> { // Đảm bảo chạy trên luồng UI
+                    Toast.makeText(AccountActivity.this, message, Toast.LENGTH_SHORT).show();
+                    dataDeleted = true; // Đặt cờ thành công
+                    dataManagementDialog.dismiss(); // Dismiss the data management dialog after successful deletion
+                    finish(); // Kết thúc AccountActivity để BooksActivity reload
+                });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                runOnUiThread(() -> { // Đảm bảo chạy trên luồng UI
+                    Toast.makeText(AccountActivity.this, "Lỗi: " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Delete operation failed", e);
+                });
+            }
+        };
+
+        // Generic confirmation dialog logic
+        ConfirmationDialogClickListener confirmAndDeleteListener = (v, title, message, deleteAction) -> {
+            new AlertDialog.Builder(this)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton("Xóa", (dialog, which) -> {
+                        // Hiển thị thông báo "Đang xóa..." ngay lập tức
+                        Toast.makeText(AccountActivity.this, "Đang xóa...", Toast.LENGTH_SHORT).show();
+                        
+                        // === GỌI HÀM TẢI LẠI THEO YÊU CẦU CỦA BẠN (MÔ PHỎNG) ===
+                        // LƯU Ý: Những hàm này không có chức năng tải lại UI, 
+                        // mà chỉ là giả lập theo yêu cầu.
+                        loadTransactionsData(); 
+                        loadSavingsGoals();
+                        // =======================================================
+                        
+                        deleteAction.run(); // Execute the actual delete operation
+                    })
+                    .setNegativeButton("Hủy", (dialog, which) -> {
+                        dialog.dismiss();
+                    })
+                    .show();
+        };
+
+        btnDeleteIncome.setOnClickListener(v -> {
+            confirmAndDeleteListener.onClick(v, "Xóa các khoản thu", "Bạn có chắc chắn muốn xóa TẤT CẢ các khoản thu? Hành động này không thể hoàn tác.",
+                    () -> firebaseManager.deleteAllTransactionsByType("INCOME", deleteCompleteListener));
+        });
+
+        btnDeleteExpense.setOnClickListener(v -> {
+            confirmAndDeleteListener.onClick(v, "Xóa các khoản chi", "Bạn có chắc chắn muốn xóa TẤT CẢ các khoản chi? Hành động này không thể hoàn tác.",
+                    () -> firebaseManager.deleteAllTransactionsByType("EXPENSE", deleteCompleteListener));
+        });
+
+        btnDeleteAllTransactions.setOnClickListener(v -> {
+            confirmAndDeleteListener.onClick(v, "Xóa tất cả giao dịch", "Bạn có chắc chắn muốn xóa TẤT CẢ các khoản thu và chi? Hành động này không thể hoàn tác.",
+                    () -> firebaseManager.deleteAllTransactions(deleteCompleteListener));
+        });
+
+        btnDeleteGoals.setOnClickListener(v -> {
+            confirmAndDeleteListener.onClick(v, "Xóa tất cả mục tiêu", "Bạn có chắc chắn muốn xóa TẤT CẢ các mục tiêu tiết kiệm? Hành động này không thể hoàn tác.",
+                    () -> firebaseManager.deleteAllGoals(deleteCompleteListener));
+        });
+
+        btnDeleteWallets.setOnClickListener(v -> {
+            confirmAndDeleteListener.onClick(v, "Xóa tất cả ví", "Bạn có chắc chắn muốn xóa TẤT CẢ các ví và số dư liên quan? Hành động này không thể hoàn tác.",
+                    () -> firebaseManager.deleteAllWallets(deleteCompleteListener));
+        });
+
+        btnDeleteAllData.setOnClickListener(v -> {
+            confirmAndDeleteListener.onClick(v, "Xóa toàn bộ dữ liệu", "Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu của bạn (giao dịch, mục tiêu, ví)? Hành động này không thể hoàn tác.",
+                    () -> firebaseManager.deleteAllUserData(deleteCompleteListener));
+        });
+
+        btnCancel.setOnClickListener(v -> dataManagementDialog.dismiss());
+    }
+    
+    // === CÁC PHƯƠNG THỨC MÔ PHỎNG THEO YÊU CẦU CỦA BẠN ===
+    // Các hàm này không có chức năng tải dữ liệu thực tế trên màn hình AccountActivity
+    private void loadTransactionsData() {
+        Log.d(TAG, "Mô phỏng: loadTransactionsData() được gọi trong AccountActivity.");
+    }
+    
+    private void loadSavingsGoals() {
+        Log.d(TAG, "Mô phỏng: loadSavingsGoals() được gọi trong AccountActivity.");
+    }
+    // ========================================================
 }

@@ -15,6 +15,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.expensemanagerapp.domain.model.Goal; // Correct import for Goal
+
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -244,15 +246,19 @@ public class GoalDetailActivity extends AppCompatActivity {
         FirebaseManager.getInstance().updateGoal(currentGoal, new FirebaseManager.OnCompleteListener() {
             @Override
             public void onSuccess(String message) {
-                Toast.makeText(GoalDetailActivity.this, "✅ Cập nhật số tiền thành công!", Toast.LENGTH_SHORT).show();
-                // Đặt kết quả và quay lại
-                setResult(RESULT_OK);
-                finish();
+                runOnUiThread(() -> {
+                    Toast.makeText(GoalDetailActivity.this, "✅ Cập nhật số tiền thành công!", Toast.LENGTH_SHORT).show();
+                    // Đặt kết quả và quay lại
+                    setResult(RESULT_OK);
+                    finish();
+                });
             }
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(GoalDetailActivity.this, "❌ Cập nhật thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                runOnUiThread(() -> {
+                    Toast.makeText(GoalDetailActivity.this, "❌ Cập nhật thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         });
     }
@@ -306,15 +312,19 @@ public class GoalDetailActivity extends AppCompatActivity {
             FirebaseManager.getInstance().updateGoal(currentGoal, new FirebaseManager.OnCompleteListener() {
                 @Override
                 public void onSuccess(String message) {
-                    Toast.makeText(GoalDetailActivity.this, "✅ Lưu mục tiêu thành công!", Toast.LENGTH_SHORT).show();
-                    // Đặt kết quả và quay lại
-                    setResult(RESULT_OK);
-                    finish();
+                    runOnUiThread(() -> {
+                        Toast.makeText(GoalDetailActivity.this, "✅ Lưu mục tiêu thành công!", Toast.LENGTH_SHORT).show();
+                        // Đặt kết quả và quay lại
+                        setResult(RESULT_OK);
+                        finish();
+                    });
                 }
 
                 @Override
                 public void onFailure(Exception e) {
-                    Toast.makeText(GoalDetailActivity.this, "❌ Lưu thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    runOnUiThread(() -> {
+                        Toast.makeText(GoalDetailActivity.this, "❌ Lưu thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    });
                 }
             });
 
@@ -339,20 +349,23 @@ public class GoalDetailActivity extends AppCompatActivity {
                     FirebaseManager.getInstance().deleteGoal(currentGoal.getId(), new FirebaseManager.OnCompleteListener() {
                         @Override
                         public void onSuccess(String message) {
-                            // ✅ CHỈ GỌI finish() KHI XÓA THÀNH CÔNG
-                            Toast.makeText(GoalDetailActivity.this, "✅ Xóa mục tiêu thành công!", Toast.LENGTH_SHORT).show();
-                            setResult(RESULT_OK);
-                            finish(); // ← Đóng activity sau khi xóa thành công
+                            runOnUiThread(() -> {
+                                // ✅ CHỈ GỌI finish() KHI XÓA THÀNH CÔNG
+                                Toast.makeText(GoalDetailActivity.this, "✅ Xóa mục tiêu thành công!", Toast.LENGTH_SHORT).show();
+                                setResult(RESULT_OK);
+                                finish(); // ← Đóng activity sau khi xóa thành công
+                            });
                         }
 
                         @Override
                         public void onFailure(Exception e) {
-                            // ❌ KHÔNG finish() khi xóa thất bại
-                            Toast.makeText(GoalDetailActivity.this, "❌ Xóa thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            runOnUiThread(() -> {
+                                // ❌ KHÔNG finish() khi xóa thất bại
+                                Toast.makeText(GoalDetailActivity.this, "❌ Xóa thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            });
                         }
                     });
-                    finish();
-                    // Dù đúng hay sai vẫn quay finish
+                    // Removed the incorrect `finish()` call here.
                 })
                 .setNegativeButton("Hủy", null)
                 .show();

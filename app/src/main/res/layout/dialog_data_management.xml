@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Quản lý dữ liệu"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="16dp"
+        android:gravity="center_horizontal"/>
+
+    <TextView
+        android:id="@+id/btn_delete_income"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Xóa các khoản thu"
+        android:padding="12dp"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE"/>
+
+    <TextView
+        android:id="@+id/btn_delete_expense"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Xóa các khoản chi"
+        android:padding="12dp"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE"/>
+
+    <TextView
+        android:id="@+id/btn_delete_all_transactions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Xóa các khoản thu chi"
+        android:padding="12dp"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE"/>
+
+    <TextView
+        android:id="@+id/btn_delete_goals"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Xóa các mục tiêu"
+        android:padding="12dp"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE"/>
+
+    <TextView
+        android:id="@+id/btn_delete_wallets"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Xóa các ví"
+        android:padding="12dp"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE"/>
+
+    <TextView
+        android:id="@+id/btn_delete_all_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Xóa toàn bộ dữ liệu"
+        android:padding="12dp"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <Button
+        android:id="@+id/btn_cancel_data_management"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="HỦY"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#CCCCCC"
+        android:textColor="@android:color/white"/>
+
+</LinearLayout>

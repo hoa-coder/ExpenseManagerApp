@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button; // Đã thêm: Import cho Button
 import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -24,12 +25,16 @@ import androidx.appcompat.app.AlertDialog; // New: For Custom Dialog
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.example.expensemanagerapp.domain.model.Goal; // SỬA: Sử dụng Goal từ domain.model
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.gms.tasks.Task; // NEW IMPORT
+import com.google.android.gms.tasks.Tasks; // NEW IMPORT
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot; // NEW IMPORT
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -46,6 +51,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
     private static final int ADD_TRANSACTION_REQUEST = 1;
     private static final int EDIT_GOAL_REQUEST = 2; // Request code mới
     private static final int EDIT_TRANSACTION_REQUEST = 3; // New: Request code for editing a transaction
+    private static final int ACCOUNT_ACTIVITY_REQUEST = 4; // NEW: Request code for AccountActivity
     public static final String EXTRA_TRANSACTION = "com.example.expensemanagerapp.EXTRA_TRANSACTION"; // Key for passing transaction object
     private static final String TAG = "BooksActivity";
 
@@ -64,6 +70,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
     private LinearLayout monthYearPickerLayout;
     private ImageView ivToggleVisibility; 
     private ImageView ivFilter; // New: Filter icon
+    private ImageView ivSearchTransactions; // NEW: Search icon
 
     private Calendar currentCalendar; // State for selected month/year (for month picker functionality)
     
@@ -71,6 +78,9 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
     private boolean isAmountVisible = true;
     private double currentTotalIncome = 0;
     private double currentTotalExpense = 0;
+    
+    // NEW: Danh sách giao dịch gốc đã tải (dùng cho tìm kiếm client-side)
+    private List<Transaction> allLoadedTransactions = new ArrayList<>();
 
     // New: State for general date range filter (millisecond timestamps)
     private long currentFilterStartTime = 0; 
@@ -78,6 +88,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
     private String currentFilterDisplayLabel = ""; 
 
     // Lưu trữ danh sách mục tiêu đã tải để truy cập nhanh khi người dùng click
+    // Đã sửa: Goal ở đây là com.example.expensemanagerapp.domain.model.Goal
     private Map<String, Goal> loadedGoalsMap = new HashMap<>();
 
     private Map<String, Boolean> expandedDates = new HashMap<>();
@@ -127,13 +138,14 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         tvExpenseAmount = findViewById(R.id.tv_expense_amount);
         monthYearPickerLayout = findViewById(R.id.month_year_picker_layout);
         ivToggleVisibility = findViewById(R.id.iv_toggle_visibility); 
-        ivFilter = findViewById(R.id.iv_filter); // NEW: Filter icon
+        ivFilter = findViewById(R.id.iv_filter); // Filter icon
+        ivSearchTransactions = findViewById(R.id.iv_search_transactions); // NEW: Search icon
 
         // Khởi tạo State (mặc định là tháng hiện tại)
         currentCalendar = Calendar.getInstance();
         
         // NEW: Khởi tạo filter state cho tháng hiện tại (mặc định)
-        setFilterRange(getRangeForCurrentMonth(), false); // Don't call loadTransactionsData twice
+        setFilterRange(getRangeForCurrentMonth(), false); // Don't call loadAllData twice
         
         // Khởi tạo Bottom Navigation Views
         LinearLayout bottomNavigation = findViewById(R.id.bottom_navigation);
@@ -156,6 +168,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         if (monthYearPickerLayout != null) monthYearPickerLayout.setOnClickListener(this); 
         if (ivToggleVisibility != null) ivToggleVisibility.setOnClickListener(this); 
         if (ivFilter != null) ivFilter.setOnClickListener(this); // Set listener for filter
+        if (ivSearchTransactions != null) ivSearchTransactions.setOnClickListener(this); // NEW: Set listener for search
         if (tvSeeAllTransactions != null) {
             tvSeeAllTransactions.setOnClickListener(this);
             tvSeeAllTransactions.setText("Thu gọn");
@@ -163,8 +176,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
 
         // Tải dữ liệu ban đầu
         updateDateUI();
-        loadTransactionsData(); // Use generic filter state
-        loadSavingsGoals();
+        loadAllData();
     }
 
     @Override
@@ -176,8 +188,8 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
              finish();
              return;
         }
-        loadTransactionsData(); // Tải lại dữ liệu cho phạm vi đang chọn
-        loadSavingsGoals();
+        // Gọi lại 2 hàm tải dữ liệu bất cứ khi nào Activity này quay lại foreground
+        loadAllData();
     }
 
     /**
@@ -256,14 +268,15 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
             .show();
     }
 
-
     /**
-     * Tải dữ liệu giao dịch từ Firebase Firestore cho phạm vi ngày đang chọn.
+     * Tải tất cả dữ liệu (Giao dịch và Mục tiêu) đồng thời từ Firebase Firestore.
+     * Đây là phiên bản tối ưu thay thế cho loadTransactionsData và loadSavingsGoals.
      */
-    private void loadTransactionsData() {
+    private void loadAllData() {
         FirebaseManager manager = FirebaseManager.getInstance();
-        if (manager == null) return; 
+        if (manager == null) return;
         
+        // === TẢI TRANSACTIONS ===
         CollectionReference transactionsRef = manager.getUserCollectionRef(FirebaseManager.TRANSACTIONS_COLLECTION);
         if (transactionsRef == null) {
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {
@@ -275,63 +288,82 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         long startTime = currentFilterStartTime;
         long endTime = currentFilterEndTime;
         
-        Query query = transactionsRef.orderBy("timestamp", Query.Direction.DESCENDING);
+        Query transactionsQuery = transactionsRef.orderBy("timestamp", Query.Direction.DESCENDING);
 
         if (startTime > 0) {
-            query = query.whereGreaterThanOrEqualTo("timestamp", startTime);
+            transactionsQuery = transactionsQuery.whereGreaterThanOrEqualTo("timestamp", startTime);
         }
         
-        // endTime luôn phải được sử dụng
         if (endTime > 0) {
-            query = query.whereLessThanOrEqualTo("timestamp", endTime);
+            transactionsQuery = transactionsQuery.whereLessThanOrEqualTo("timestamp", endTime);
         }
         
-        // 2. Query Firebase Firestore
-        query.get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    // **START: Đảm bảo chạy trên Main Thread để cập nhật UI**
+        // === TẢI GOALS ===
+        CollectionReference goalsRef = manager.getUserCollectionRef(FirebaseManager.GOALS_COLLECTION);
+        if (goalsRef == null) return;
+        
+        Query goalsQuery = goalsRef.orderBy("timestamp", Query.Direction.DESCENDING);
+        
+        // Xóa map cũ
+        loadedGoalsMap.clear();
+        
+        // === THỰC HIỆN 2 QUERY ĐỒNG THỜI ===
+        Task<QuerySnapshot> transactionsTask = transactionsQuery.get();
+        Task<QuerySnapshot> goalsTask = goalsQuery.get();
+        
+        Tasks.whenAllSuccess(transactionsTask, goalsTask)
+                .addOnSuccessListener(results -> {
                     runOnUiThread(() -> {
-                        List<Transaction> monthlyTransactions = new ArrayList<>();
+                        // === XỬ LÝ TRANSACTIONS ===
+                        QuerySnapshot transactionsSnapshot = (QuerySnapshot) results.get(0);
+                        List<Transaction> transactions = new ArrayList<>();
                         double totalIncome = 0;
                         double totalExpense = 0;
 
-                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        for (QueryDocumentSnapshot document : transactionsSnapshot) {
                             try {
                                 Transaction transaction = document.toObject(Transaction.class);
                                 transaction.setId(document.getId());
-                                monthlyTransactions.add(transaction);
+                                transactions.add(transaction);
                                 
-                                // Tính tổng cho phạm vi đang chọn
                                 if (transaction.getType().equalsIgnoreCase("income")) {
                                     totalIncome += transaction.getAmount();
                                 } else {
                                     totalExpense += transaction.getAmount();
                                 }
-
                             } catch (Exception e) {
                                 Log.e(TAG, "Error converting document to Transaction: " + e.getMessage());
                             }
                         }
 
-                        // Store totals
+                        allLoadedTransactions = transactions;
                         currentTotalIncome = totalIncome;
                         currentTotalExpense = totalExpense;
-
-                        // Cập nhật tổng quan tài chính
+                        
                         updateFinancialOverview(currentTotalIncome, currentTotalExpense);
-
-                        // Hiển thị danh sách giao dịch 
-                        processAndDisplayTransactions(monthlyTransactions);
-
-                        if (monthlyTransactions.isEmpty()) {
-                             // Toast.makeText(this, "Chưa có giao dịch nào trong phạm vi này.", Toast.LENGTH_SHORT).show();
+                        processAndDisplayTransactions(allLoadedTransactions);
+                        
+                        // === XỬ LÝ GOALS ===
+                        QuerySnapshot goalsSnapshot = (QuerySnapshot) results.get(1);
+                        List<Goal> goals = new ArrayList<>();
+                        
+                        for (QueryDocumentSnapshot document : goalsSnapshot) {
+                            try {
+                                Goal goal = document.toObject(Goal.class);
+                                goal.setId(document.getId());
+                                goals.add(goal);
+                                loadedGoalsMap.put(goal.getId(), goal);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error converting document to Goal: " + e.getMessage());
+                            }
                         }
+
+                        displayGoals(goals);
                     });
-                    // **END: runOnUiThread**
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Lỗi khi tải giao dịch: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    Log.e(TAG, "Error loading transactions", e);
+                    Toast.makeText(this, "Lỗi khi tải dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Error loading data", e);
                 });
     }
 
@@ -444,6 +476,8 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         double totalExpenseForDay = 0;
 
         for (Transaction transaction : transactions) {
+            // LƯU Ý: Đây là nơi bạn có thể thêm bộ lọc tìm kiếm nếu muốn lọc tiếp sau khi tải
+            
             String transactionDay = dayFormat.format(new Date(transaction.getTimestamp()));
 
             if (!transactionDay.equals(currentDay) && !currentDay.isEmpty()) {
@@ -808,8 +842,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
 
         // Thông báo và reload ngay lập tức
         Toast.makeText(this, "Cập nhật giao dịch thành công.", Toast.LENGTH_SHORT).show();
-        loadTransactionsData();
-        loadSavingsGoals();
+        loadAllData();
     }
     
     /**
@@ -839,26 +872,10 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
             return;
         }
 
-        // Tạo loading dialog trực tiếp trong code
-        AlertDialog loadingDialog = new AlertDialog.Builder(this)
-                .setMessage("Đang xóa...")
-                .setCancelable(false)
-                .create();
-        loadingDialog.show();
+        transactionsRef.document(transaction.getId()).delete();
 
-        transactionsRef.document(transaction.getId())
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    loadingDialog.dismiss();
-                    Toast.makeText(this, "Đã xóa giao dịch thành công.", Toast.LENGTH_SHORT).show();
-                    loadTransactionsData();
-                    loadSavingsGoals();
-                })
-                .addOnFailureListener(e -> {
-                    loadingDialog.dismiss();
-                    Toast.makeText(this, "Lỗi khi xóa giao dịch: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    Log.e(TAG, "Error deleting transaction", e);
-                });
+        Toast.makeText(this, "Đã xóa giao dịch thành công.", Toast.LENGTH_SHORT).show();
+        loadAllData();
     }
     private void onSeeAllTransactionsClicked() {
         if (tvSeeAllTransactions == null) return;
@@ -876,6 +893,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
             View headerView = llTransactions.findViewWithTag("HEADER_" + dateString);
             if (headerView instanceof LinearLayout) {
                 LinearLayout headerLayout = (LinearLayout) headerView;
+                // Trong cấu trúc mới, TextView hiển thị "Nhấn để xem chi tiết" là view thứ hai của LeftLayout (Child 0)
                 if (headerLayout.getChildCount() > 0 && headerLayout.getChildAt(0) instanceof LinearLayout) {
                     LinearLayout leftLayout = (LinearLayout) headerLayout.getChildAt(0);
                     if (leftLayout.getChildCount() > 1 && leftLayout.getChildAt(1) instanceof TextView) {
@@ -887,6 +905,71 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         }
         tvSeeAllTransactions.setText(newText);
         Toast.makeText(this, currentlyExpanded ? "Đã thu gọn tất cả giao dịch" : "Đã mở rộng tất cả giao dịch", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Mở dialog tìm kiếm và xử lý việc lọc dữ liệu.
+     */
+    private void showSearchDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Sử dụng layout đã tạo: dialog_search_transactions.xml
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_search_transactions, null);
+        builder.setView(dialogView);
+
+        EditText etSearchKeyword = dialogView.findViewById(R.id.et_search_keyword);
+        Button btnSearch = dialogView.findViewById(R.id.btn_search_transactions);
+        Button btnCancel = dialogView.findViewById(R.id.btn_cancel_search);
+
+        // Đảm bảo không gọi show() cho đến khi dialog được cấu hình
+        final AlertDialog alertDialog = builder.create();
+
+        btnSearch.setOnClickListener(v -> {
+            String keyword = etSearchKeyword.getText().toString().trim();
+            performSearch(keyword); // Gọi phương thức tìm kiếm
+            alertDialog.dismiss();
+        });
+
+        btnCancel.setOnClickListener(v -> {
+            // Nếu người dùng nhấn Hủy, khôi phục danh sách đầy đủ (nếu đang lọc)
+            performSearch("");
+            alertDialog.dismiss();
+        });
+
+        alertDialog.show();
+    }
+    
+    /**
+     * Lọc danh sách giao dịch đã tải (allLoadedTransactions) dựa trên từ khóa.
+     */
+    private void performSearch(String keyword) {
+        List<Transaction> filteredList = new ArrayList<>();
+        String lowerCaseKeyword = keyword.toLowerCase(Locale.getDefault());
+
+        if (allLoadedTransactions.isEmpty()) {
+            Toast.makeText(this, "Chưa có dữ liệu để tìm kiếm.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (lowerCaseKeyword.isEmpty()) {
+            // Hiển thị danh sách gốc
+            filteredList.addAll(allLoadedTransactions);
+            Toast.makeText(this, "Đã khôi phục danh sách đầy đủ.", Toast.LENGTH_SHORT).show();
+        } else {
+            // Lọc
+            for (Transaction transaction : allLoadedTransactions) {
+                // Giả sử Transaction có getCategory() (đóng vai trò transactionName) và getNote()
+                String category = transaction.getCategory() != null ? transaction.getCategory().toLowerCase(Locale.getDefault()) : "";
+                String note = transaction.getNote() != null ? transaction.getNote().toLowerCase(Locale.getDefault()) : "";
+
+                if (category.contains(lowerCaseKeyword) || note.contains(lowerCaseKeyword)) {
+                    filteredList.add(transaction);
+                }
+            }
+            Toast.makeText(this, "Tìm thấy " + filteredList.size() + " giao dịch.", Toast.LENGTH_SHORT).show();
+        }
+        
+        // Hiển thị danh sách đã lọc (sử dụng lại logic nhóm/hiển thị hiện có)
+        processAndDisplayTransactions(filteredList);
     }
 
 
@@ -909,15 +992,17 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
             startActivity(intent);
         } else if (v == bottomNavMe) {
             Intent intent = new Intent(this, AccountActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, ACCOUNT_ACTIVITY_REQUEST);
         } else if (v == tvSeeAllTransactions) {
             onSeeAllTransactionsClicked();
         } else if (id == R.id.month_year_picker_layout) {
             showMonthYearPicker();
         } else if (id == R.id.iv_toggle_visibility) { 
             toggleAmountVisibility();
-        } else if (id == R.id.iv_filter) { // NEW: Filter click handler
+        } else if (id == R.id.iv_filter) { // Filter click handler
             showFilterDialog();
+        } else if (id == R.id.iv_search_transactions) { // NEW: Search click handler
+            showSearchDialog();
         }
     }
 
@@ -927,55 +1012,18 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
 
         if (resultCode == RESULT_OK) {
             if (requestCode == ADD_TRANSACTION_REQUEST || requestCode == EDIT_TRANSACTION_REQUEST) {
-                loadTransactionsData(); // Tải lại dữ liệu sau khi thêm/sửa giao dịch mới
+                loadAllData(); // Tải lại dữ liệu sau khi thêm/sửa giao dịch mới
             } else if (requestCode == EDIT_GOAL_REQUEST) {
-                // Sửa lỗi: đảm bảo làm mới danh sách mục tiêu sau khi xóa/chỉnh sửa
-                loadSavingsGoals(); 
-                // Cần tải lại giao dịch vì hành động FUND/SAVE có thể ảnh hưởng đến tổng quan
-                loadTransactionsData();
+                loadAllData(); 
+            } else if (requestCode == ACCOUNT_ACTIVITY_REQUEST) { // NEW: Handle return from AccountActivity
+                loadAllData(); 
             }
         }
     }
-
-
-    /**
-     * Tải và hiển thị các mục tiêu tiết kiệm từ Firebase Firestore
-     */
-    private void loadSavingsGoals() {
-        if (llGoalsGrid == null) return;
-
-        FirebaseManager manager = FirebaseManager.getInstance();
-        if (manager == null) return;
-        
-        CollectionReference goalsRef = manager.getUserCollectionRef(FirebaseManager.GOALS_COLLECTION);
-        if (goalsRef == null) return;
-        
-        // Xóa map cũ và tạo lại map mới
-        loadedGoalsMap.clear();
-
-        goalsRef.orderBy("timestamp", Query.Direction.DESCENDING)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Goal> goals = new ArrayList<>();
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        try {
-                            Goal goal = document.toObject(Goal.class);
-                            goal.setId(document.getId());
-                            goals.add(goal);
-                            loadedGoalsMap.put(goal.getId(), goal); // Lưu vào Map
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error converting document to Goal: " + e.getMessage());
-                        }
-                    }
-
-                    displayGoals(goals);
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Lỗi khi tải mục tiêu: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    Log.e(TAG, "Error loading goals", e);
-                });
-    }
-
+    
+    // Xóa loadTransactionsData()
+    // Xóa loadSavingsGoals()
+    
     /**
      * Hiển thị danh sách các mục tiêu đã tải.
      */
@@ -1094,7 +1142,7 @@ public class BooksActivity extends AppCompatActivity implements View.OnClickList
         
         updateDateUI();
         if (reloadData) {
-            loadTransactionsData(); 
+            loadAllData(); 
         }
     }
     

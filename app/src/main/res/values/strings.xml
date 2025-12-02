@@ -32,7 +32,7 @@
 
     <!-- Strings for activity_manage_accounts.xml -->
     <string name="manage_accounts_header">Quản lý tài khoản</string>
-    <string name="add_wallet_button">+Thêm vào</string>
+    <string name="add_wallet_button">+ Thêm vào</string>
     <string name="content_description_menu_more">Tùy chọn khác</string>
     <string name="content_description_checkbox_wallet">Tình trạng hoạt động của ví</string>
     <string name="filter_used">Đã sử dụng</string>
@@ -116,4 +116,23 @@
     <string name="splash_screen_title">Expense Manager</string>
     <string name="content_description_app_logo">Logo ứng dụng</string>
     <string name="content_description_loading_bar">Đang tải dữ liệu ứng dụng</string>
+
+    <!-- Strings for activity_goal_detail.xml -->
+    <string name="goal_detail_close_button_description">Close</string>
+    <string name="goal_detail_title">Chi tiết Mục tiêu</string>
+    <string name="goal_detail_save_button_description">Save</string>
+    <string name="goal_detail_emoji_car">🚗</string>
+    <string name="goal_detail_name_display">Tên Mục Tiêu</string>
+    <string name="goal_detail_current_target_placeholder">0 đ / 10.000.000 đ</string>
+    <string name="goal_detail_percentage_completed_placeholder">0% hoàn thành</string>
+    <string name="goal_detail_add_fund_button">Thêm tiền</string>
+    <string name="goal_detail_withdraw_button">Rút tiền</string>
+    <string name="goal_detail_edit_details_title">Chỉnh sửa chi tiết</string>
+    <string name="goal_detail_name_hint">Tên Mục tiêu</string>
+    <string name="goal_detail_target_amount_hint">Số tiền mục tiêu</string>
+    <string name="goal_detail_current_amount_hint">Số tiền hiện tại</string>
+    <string name="goal_detail_start_date_placeholder">Ngày bắt đầu: DD/MM/YYYY</string>
+    <string name="goal_detail_end_date_placeholder">Ngày kết thúc: DD/MM/YYYY</string>
+    <string name="goal_detail_note_hint">Ghi chú</string>
+    <string name="goal_detail_delete_button">XÓA MỤC TIÊU</string>
 </resources>

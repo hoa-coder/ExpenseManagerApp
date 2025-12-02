@@ -280,10 +280,16 @@
                             android:textColor="@android:color/black" />
 
                         <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:id="@+id/iv_search_transactions"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="8dp"
+                            android:clickable="true"
+                            android:contentDescription="Search transactions icon"
+                            android:focusable="true"
                             android:src="@android:drawable/ic_menu_search"
-                            android:contentDescription="Search transactions" />
+                            app:tint="#757575" />
+
                     </LinearLayout>
 
                     <!-- Container for transactions (Removed inner ScrollView) -->

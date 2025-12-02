@@ -14,6 +14,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.expensemanagerapp.domain.model.Transaction; // Correct import
+
 public class AddExpenseActivity extends AppCompatActivity implements View.OnClickListener, FirebaseManager.OnCompleteListener {
 
     private static final int ADD_INCOME_REQUEST = 2;
@@ -24,7 +26,7 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
     private String selectedCategory = "Hàng ngày";
     private View selectedCategoryView = null;
 
-    private Transaction pendingTransaction = null; // Dùng để lưu transaction trước khi gửi đi
+    private Transaction pendingTransaction = null; // Changed to domain.model.Transaction
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -215,7 +217,8 @@ public class AddExpenseActivity extends AppCompatActivity implements View.OnClic
                 } else if (currentInput.toString().equals("0") && !text.equals(".")) {
                     currentInput.setLength(0);
                     currentInput.append(text);
-                } else {
+                }
+                else {
                     currentInput.append(text);
                 }
             }

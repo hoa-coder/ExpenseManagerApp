@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.expensemanagerapp.domain.model.Goal; // Correct import for Goal
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;

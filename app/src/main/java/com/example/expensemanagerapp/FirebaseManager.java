@@ -5,6 +5,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.expensemanagerapp.domain.model.Goal;
+import com.example.expensemanagerapp.domain.model.Transaction;
+import com.example.expensemanagerapp.domain.model.Wallet;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
@@ -16,8 +19,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -213,6 +218,66 @@ public class FirebaseManager {
     }
 
     /**
+     * ✅ Xóa tất cả giao dịch theo loại (INCOME/EXPENSE).
+     */
+    public void deleteAllTransactionsByType(@NonNull String type, @NonNull OnCompleteListener listener) {
+        CollectionReference ref = getUserCollectionRef(TRANSACTIONS_COLLECTION);
+        if (ref == null) {
+            listener.onFailure(new Exception("User not logged in"));
+            return;
+        }
+
+        ref.whereEqualTo("type", type).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> documentIds = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        documentIds.add(document.getId());
+                    }
+
+                    if (documentIds.isEmpty()) {
+                        listener.onSuccess("Đã xóa 0 giao dịch " + type.toLowerCase() + ".");
+                        return;
+                    }
+
+                    batchDelete(TRANSACTIONS_COLLECTION, documentIds, listener);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error querying transactions by type: " + type, e);
+                    listener.onFailure(e);
+                });
+    }
+
+    /**
+     * ✅ Xóa tất cả giao dịch (thu và chi).
+     */
+    public void deleteAllTransactions(@NonNull OnCompleteListener listener) {
+        CollectionReference ref = getUserCollectionRef(TRANSACTIONS_COLLECTION);
+        if (ref == null) {
+            listener.onFailure(new Exception("User not logged in"));
+            return;
+        }
+
+        ref.get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> documentIds = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        documentIds.add(document.getId());
+                    }
+
+                    if (documentIds.isEmpty()) {
+                        listener.onSuccess("Đã xóa 0 giao dịch.");
+                        return;
+                    }
+
+                    batchDelete(TRANSACTIONS_COLLECTION, documentIds, listener);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error querying all transactions", e);
+                    listener.onFailure(e);
+                });
+    }
+
+    /**
      * ✅ Load transactions với listener (realtime)
      */
     public ListenerRegistration loadTransactionsRealtime(@NonNull OnDataLoadListener<Transaction> listener) {
@@ -302,6 +367,48 @@ public class FirebaseManager {
     }
 
     /**
+     * ✅ Xóa tất cả các mục tiêu.
+     */
+    public void deleteAllGoals(@NonNull OnCompleteListener listener) {
+        CollectionReference ref = getUserCollectionRef(GOALS_COLLECTION);
+        if (ref == null) {
+            listener.onFailure(new Exception("User not logged in"));
+            return;
+        }
+
+        ref.get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> documentIds = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        documentIds.add(document.getId());
+                    }
+                    Log.d(TAG, "deleteAllGoals: Found " + documentIds.size() + " goals to delete.");
+
+                    if (documentIds.isEmpty()) {
+                        listener.onSuccess("Đã xóa 0 mục tiêu."); // Specific success message
+                        return;
+                    }
+
+                    // Use an inner OnCompleteListener to send a more descriptive message
+                    batchDelete(GOALS_COLLECTION, documentIds, new OnCompleteListener() {
+                        @Override
+                        public void onSuccess(String message) {
+                            listener.onSuccess("Đã xóa thành công " + documentIds.size() + " mục tiêu.");
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            listener.onFailure(e);
+                        }
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error querying all goals", e);
+                    listener.onFailure(e);
+                });
+    }
+
+    /**
      * ✅ Load goals với listener (realtime)
      */
     public ListenerRegistration loadGoalsRealtime(@NonNull OnDataLoadListener<Goal> listener) {
@@ -311,7 +418,7 @@ public class FirebaseManager {
             return null;
         }
 
-        return ref.orderBy("targetDate", Query.Direction.ASCENDING)
+        return ref.orderBy("timestamp", Query.Direction.DESCENDING)
                 .addSnapshotListener((snapshots, error) -> {
                     if (error != null) {
                         Log.e(TAG, "loadGoalsRealtime failed", error);
@@ -350,6 +457,36 @@ public class FirebaseManager {
     }
 
     /**
+     * ✅ Xóa tất cả các ví.
+     */
+    public void deleteAllWallets(@NonNull OnCompleteListener listener) {
+        CollectionReference ref = getUserCollectionRef(WALLETS_COLLECTION);
+        if (ref == null) {
+            listener.onFailure(new Exception("User not logged in"));
+            return;
+        }
+
+        ref.get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> documentIds = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        documentIds.add(document.getId());
+                    }
+
+                    if (documentIds.isEmpty()) {
+                        listener.onSuccess("Đã xóa 0 ví.");
+                        return;
+                    }
+
+                    batchDelete(WALLETS_COLLECTION, documentIds, listener);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error querying all wallets", e);
+                    listener.onFailure(e);
+                });
+    }
+
+    /**
      * ✅ Load wallets với listener (realtime)
      */
     public ListenerRegistration loadWalletsRealtime(@NonNull OnDataLoadListener<Wallet> listener) {
@@ -374,6 +511,86 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     * ✅ Xóa toàn bộ dữ liệu người dùng (giao dịch, mục tiêu, ví).
+     */
+    public void deleteAllUserData(@NonNull OnCompleteListener listener) {
+        // Tạo danh sách các tác vụ xóa
+        List<Task<Void>> deleteTasks = new ArrayList<>();
+
+        // Xóa tất cả giao dịch
+        Task<Void> transactionsDeleteTask = Tasks.call(executorService, () -> {
+            CollectionReference transactionsRef = getUserCollectionRef(TRANSACTIONS_COLLECTION);
+            if (transactionsRef != null) {
+                QuerySnapshot snapshots = Tasks.await(transactionsRef.get());
+                if (!snapshots.isEmpty()) {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        batch.delete(doc.getReference());
+                    }
+                    return Tasks.await(batch.commit());
+                }
+            }
+            return null;
+        });
+        deleteTasks.add(transactionsDeleteTask);
+
+        // Xóa tất cả mục tiêu
+        Task<Void> goalsDeleteTask = Tasks.call(executorService, () -> {
+            CollectionReference goalsRef = getUserCollectionRef(GOALS_COLLECTION);
+            if (goalsRef != null) {
+                QuerySnapshot snapshots = Tasks.await(goalsRef.get());
+                if (!snapshots.isEmpty()) {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        batch.delete(doc.getReference());
+                    }
+                    return Tasks.await(batch.commit());
+                }
+            }
+            return null;
+        });
+        deleteTasks.add(goalsDeleteTask);
+
+        // Xóa tất cả ví
+        Task<Void> walletsDeleteTask = Tasks.call(executorService, () -> {
+            CollectionReference walletsRef = getUserCollectionRef(WALLETS_COLLECTION);
+            if (walletsRef != null) {
+                QuerySnapshot snapshots = Tasks.await(walletsRef.get());
+                if (!snapshots.isEmpty()) {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        batch.delete(doc.getReference());
+                    }
+                    return Tasks.await(batch.commit());
+                }
+            }
+            return null;
+        });
+        deleteTasks.add(walletsDeleteTask);
+
+        // Chờ tất cả các tác vụ xóa hoàn thành
+        Tasks.whenAllComplete(deleteTasks)
+                .addOnSuccessListener(results -> {
+                    boolean allSuccessful = true;
+                    for (Task<?> task : deleteTasks) {
+                        if (!task.isSuccessful()) {
+                            allSuccessful = false;
+                            Log.e(TAG, "deleteAllUserData: One of the delete tasks failed: " + task.getException());
+                        }
+                    }
+                    if (allSuccessful) {
+                        listener.onSuccess("Đã xóa toàn bộ dữ liệu thành công.");
+                    } else {
+                        listener.onFailure(new Exception("Một số thao tác xóa dữ liệu bị lỗi. Vui lòng kiểm tra log."));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "deleteAllUserData: Failed to delete all user data", e);
+                    listener.onFailure(e);
+                });
+    }
+
     // ==================== BATCH OPERATIONS ====================
 
     /**
@@ -393,9 +610,9 @@ public class FirebaseManager {
         }
 
         batch.commit()
-                .addOnSuccessListener(aVoid -> listener.onSuccess("Batch delete successful: " + documentIds.size() + " items"))
+                .addOnSuccessListener(aVoid -> listener.onSuccess("Batch delete successful: " + documentIds.size() + " items from " + collectionName))
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "batchDelete failed", e);
+                    Log.e(TAG, "batchDelete failed for collection " + collectionName, e);
                     listener.onFailure(e);
                 });
     }

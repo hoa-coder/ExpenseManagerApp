@@ -14,6 +14,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.example.expensemanagerapp.domain.model.Transaction; // Correct import
+
 /**
  * Activity to handle the addition of new income transactions, saving to Firebase.
  */
